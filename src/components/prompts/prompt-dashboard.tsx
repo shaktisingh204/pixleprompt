@@ -1,10 +1,12 @@
 'use client';
 
 import {useState, useMemo} from 'react';
+import Link from 'next/link';
 import type {FullPrompt, Category} from '@/lib/definitions';
 import {CategoryFilters} from './category-filters';
 import {PromptCard} from './prompt-card';
-import {PromptSuggestionDialog} from './prompt-suggestion-dialog';
+import {Button} from '@/components/ui/button';
+import {PlusCircle} from 'lucide-react';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 
 type PromptDashboardProps = {
@@ -53,11 +55,6 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
     return prompts;
   }, [initialPrompts, selectedCategory, favoritePromptIds, activeTab]);
 
-  const favoritePrompts = useMemo(
-    () => initialPrompts.filter(p => favoritePromptIds.has(p.id)),
-    [initialPrompts, favoritePromptIds]
-  );
-
   return (
     <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
       <div className="flex flex-col gap-4">
@@ -67,12 +64,12 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
               <TabsTrigger value="all">All Prompts</TabsTrigger>
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
             </TabsList>
-            <PromptSuggestionDialog
-              favoritePrompts={favoritePrompts}
-              selectedCategories={
-                selectedCategory ? allCategories.filter(c => c.id === selectedCategory) : []
-              }
-            />
+            <Button asChild>
+              <Link href="/submit-prompt">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Submit Prompt
+              </Link>
+            </Button>
           </div>
           <div className="my-4">
             <CategoryFilters

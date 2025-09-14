@@ -7,6 +7,7 @@ import {revalidatePath} from 'next/cache';
 import {signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
+import {prompts} from '@/lib/data';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -116,5 +117,57 @@ export async function getPromptSuggestions(
   } catch (error) {
     console.error('Error fetching prompt suggestions:', error);
     return {suggestedPrompts: []};
+  }
+}
+
+const submitPromptSchema = z.object({
+  text: z.string().min(10, 'Prompt must be at least 10 characters.'),
+  categoryId: z.string().min(1, 'Please select a category.'),
+});
+
+export type SubmitPromptState = {
+  errors?: {
+    text?: string[];
+    categoryId?: string[];
+    server?: string[];
+  };
+  message?: string | null;
+  success?: boolean;
+};
+
+export async function submitPrompt(
+  prevState: SubmitPromptState | undefined,
+  formData: FormData
+): Promise<SubmitPromptState> {
+  try {
+    const validatedFields = submitPromptSchema.safeParse(Object.fromEntries(formData.entries()));
+
+    if (!validatedFields.success) {
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+        message: 'Invalid fields.',
+      };
+    }
+
+    const {text, categoryId} = validatedFields.data;
+
+    // This is where you would typically save to a database.
+    // For now, we'll add it to our mock data array.
+    const newPrompt = {
+      id: `p-${Date.now()}`,
+      text,
+      categoryId,
+      imageId: `img_prompt_${Date.now()}`, // needs a corresponding placeholder image
+    };
+    prompts.push(newPrompt);
+    console.log('New prompt submitted:', newPrompt);
+    console.log('Total prompts:', prompts.length);
+    revalidatePath('/');
+    return {success: true, message: 'Prompt submitted successfully!'};
+  } catch (error) {
+    if (error instanceof Error) {
+      return {errors: {server: [error.message]}};
+    }
+    return {errors: {server: ['Something went wrong.']}};
   }
 }
