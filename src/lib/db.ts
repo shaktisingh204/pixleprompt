@@ -58,7 +58,7 @@ async function createTables() {
     
     // Seed initial data if tables are empty
     const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
-    if (Array.isArray(users) && users[0] && 'count' in users[0] && users[0].count === 0) {
+    if (Array.isArray(users) && users[0] && 'count' in users[0] && (users[0] as { count: number }).count === 0) {
         await connection.query(`
             INSERT INTO users (id, name, email, password, role) VALUES
             ('user-1', 'Admin User', 'admin@example.com', 'password123', 'admin'),
@@ -67,20 +67,20 @@ async function createTables() {
     }
 
     const [categories] = await connection.query('SELECT COUNT(*) as count FROM categories');
-     if (Array.isArray(categories) && categories[0] && 'count' in categories[0] && categories[0].count === 0) {
-        await connection.query(\`
+     if (Array.isArray(categories) && categories[0] && 'count' in categories[0] && (categories[0] as { count: number }).count === 0) {
+        await connection.query(`
             INSERT INTO categories (id, name, icon) VALUES
             ('cat-1', 'Art', 'Palette'),
             ('cat-2', 'Writing', 'PenTool'),
             ('cat-3', 'Photography', 'Camera'),
             ('cat-4', 'Music', 'Music'),
             ('cat-5', 'Development', 'Code');
-        \`);
+        `);
     }
 
     const [images] = await connection.query('SELECT COUNT(*) as count FROM placeholder_images');
-    if (Array.isArray(images) && images[0] && 'count' in images[0] && images[0].count === 0) {
-        await connection.query(\`
+    if (Array.isArray(images) && images[0] && 'count' in images[0] && (images[0] as { count: number }).count === 0) {
+        await connection.query(`
             INSERT INTO placeholder_images (id, description, imageUrl, imageHint) VALUES
             ('img_prompt_1', 'A futuristic cityscape', 'https://picsum.photos/seed/prompt1/600/400', 'futuristic cityscape'),
             ('img_prompt_2', 'A serene forest path', 'https://picsum.photos/seed/prompt2/600/400', 'forest path'),
@@ -88,20 +88,20 @@ async function createTables() {
             ('img_prompt_4', 'An astronaut in space', 'https://picsum.photos/seed/prompt4/600/400', 'astronaut space'),
             ('img_prompt_5', 'A vintage record player', 'https://picsum.photos/seed/prompt5/600/400', 'record player'),
             ('img_prompt_6', 'A classic muscle car', 'https://picsum.photos/seed/prompt6/600/400', 'muscle car');
-        \`);
+        `);
     }
     
     const [prompts] = await connection.query('SELECT COUNT(*) as count FROM prompts');
-    if (Array.isArray(prompts) && prompts[0] && 'count' in prompts[0] && prompts[0].count === 0) {
-        await connection.query(\`
+    if (Array.isArray(prompts) && prompts[0] && 'count' in prompts[0] && (prompts[0] as { count: number }).count === 0) {
+        await connection.query(`
             INSERT INTO prompts (id, text, categoryId, imageId, status, submittedBy) VALUES
             ('p-1', 'A futuristic cityscape at dusk, with flying vehicles and holographic ads, in the style of Blade Runner.', 'cat-1', 'img_prompt_1', 'approved', 'user-1'),
-            ('p-2', 'Compose a blog post titled \\"5 Tips for More Productive Mornings\\" aimed at young professionals.', 'cat-2', 'img_prompt_2', 'approved', 'user-2'),
+            ('p-2', 'Compose a blog post titled "5 Tips for More Productive Mornings" aimed at young professionals.', 'cat-2', 'img_prompt_2', 'approved', 'user-2'),
             ('p-3', 'A close-up shot of a vintage camera on a wooden table, with soft, warm lighting.', 'cat-3', 'img_prompt_3', 'approved', 'user-1'),
             ('p-4', 'Create a lo-fi hip hop track with a melancholic melody and a steady, relaxing beat.', 'cat-4', 'img_prompt_4', 'approved', 'user-2'),
             ('p-5', 'Generate a Python script that automates daily file backups to a cloud storage service.', 'cat-5', 'img_prompt_5', 'approved', 'user-1'),
             ('p-6', 'Design a minimalist logo for a new tech startup called "Innovate".', 'cat-1', 'img_prompt_6', 'approved', 'user-2');
-        \`);
+        `);
     }
 
 
