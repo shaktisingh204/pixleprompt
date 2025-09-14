@@ -34,7 +34,11 @@ export default async function Home() {
             Browse, filter, and find your next spark of inspiration.
           </p>
         </div>
-        <PromptDashboard initialPrompts={fullPrompts} allCategories={categories} />
+        <PromptDashboard
+          initialPrompts={fullPrompts}
+          allCategories={categories}
+          user={user}
+        />
       </main>
     </div>
   );

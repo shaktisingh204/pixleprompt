@@ -7,15 +7,23 @@ import {cn} from '@/lib/utils';
 import * as Lucide from 'lucide-react';
 import {useEffect, useState} from 'react';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 
 type PromptCardProps = {
   prompt: FullPrompt;
   isFavorite: boolean;
   onToggleFavorite: (promptId: string) => void;
+  isUserLoggedIn: boolean;
 };
 
-export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardProps) {
+export function PromptCard({
+  prompt,
+  isFavorite,
+  onToggleFavorite,
+  isUserLoggedIn,
+}: PromptCardProps) {
   const CategoryIcon = Lucide[prompt.category.icon] as Lucide.LucideIcon;
+  const router = useRouter();
 
   const [counts, setCounts] = useState({favorites: 0, copies: 0});
 
@@ -26,6 +34,15 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
       copies: Math.floor(Math.random() * 5000) + 200,
     });
   }, []);
+
+  const handleFavoriteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (isUserLoggedIn) {
+      onToggleFavorite(prompt.id);
+    } else {
+      router.push('/login');
+    }
+  };
 
   return (
     <Link href={`/prompt/${prompt.id}`} className="group relative aspect-[3/4] overflow-hidden rounded-lg">
@@ -50,10 +67,7 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
             variant="ghost"
             size="icon"
             className="group/heart z-10 rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
-            onClick={(e) => {
-              e.preventDefault();
-              onToggleFavorite(prompt.id)
-            }}
+            onClick={handleFavoriteClick}
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart

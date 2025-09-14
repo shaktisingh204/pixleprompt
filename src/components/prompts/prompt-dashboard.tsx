@@ -1,7 +1,7 @@
 'use client';
 
 import {useState, useMemo} from 'react';
-import type {FullPrompt, Category} from '@/lib/definitions';
+import type {FullPrompt, Category, User} from '@/lib/definitions';
 import {CategoryFilters} from './category-filters';
 import {PromptCard} from './prompt-card';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
@@ -9,9 +9,10 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 type PromptDashboardProps = {
   initialPrompts: FullPrompt[];
   allCategories: Category[];
+  user: User | null;
 };
 
-export function PromptDashboard({initialPrompts, allCategories}: PromptDashboardProps) {
+export function PromptDashboard({initialPrompts, allCategories, user}: PromptDashboardProps) {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [favoritePromptIds, setFavoritePromptIds] = useState<Set<string>>(new Set());
@@ -78,6 +79,7 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
                     prompt={prompt}
                     isFavorite={favoritePromptIds.has(prompt.id)}
                     onToggleFavorite={toggleFavorite}
+                    isUserLoggedIn={!!user}
                   />
                 ))}
               </div>
@@ -101,6 +103,7 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
                     prompt={prompt}
                     isFavorite={favoritePromptIds.has(prompt.id)}
                     onToggleFavorite={toggleFavorite}
+                    isUserLoggedIn={!!user}
                   />
                 ))}
               </div>
