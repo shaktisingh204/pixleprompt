@@ -11,12 +11,9 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarProvider,
-  SidebarTrigger,
   SidebarInset,
   useSidebar,
 } from '@/components/ui/sidebar';
-import {Logo} from '@/components/logo';
-import {Button} from '@/components/ui/button';
 import Link from 'next/link';
 import {
   Home,
@@ -25,13 +22,10 @@ import {
   Mail,
   PlusCircle,
   LayoutGrid,
-  PanelLeft,
 } from 'lucide-react';
 import {usePathname} from 'next/navigation';
 import {useEffect, useState} from 'react';
-import {UserNav} from '@/components/auth/user-nav';
 import {cn} from '@/lib/utils';
-import {useIsMobile} from '@/hooks/use-mobile';
 import {Header} from '@/components/layout/header';
 
 function MainContent({
@@ -42,6 +36,7 @@ function MainContent({
   user: User | null;
 }) {
   const {isMobile} = useSidebar();
+  const pathname = usePathname();
   return (
     <div className="flex flex-col w-full">
        <Header user={user} />
@@ -53,7 +48,7 @@ function MainContent({
              href="/"
              className={cn(
                'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
-                usePathname() === '/' ? 'text-primary' : 'text-muted-foreground'
+                pathname === '/' ? 'text-primary' : 'text-muted-foreground'
              )}
            >
              <LayoutGrid className="w-5 h-5 mb-1" />
@@ -63,7 +58,7 @@ function MainContent({
              href="/submit-prompt"
              className={cn(
                'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
-               usePathname() === '/submit-prompt' ? 'text-primary' : 'text-muted-foreground'
+               pathname === '/submit-prompt' ? 'text-primary' : 'text-muted-foreground'
              )}
            >
              <PlusCircle className="w-5 h-5 mb-1" />
@@ -99,9 +94,7 @@ export function AppShell({children}: {children: React.ReactNode}) {
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon" variant="sidebar">
-        <SidebarHeader>
-          <Logo />
-        </SidebarHeader>
+        <SidebarHeader className="h-16 border-b" />
         <SidebarContent>
           <SidebarMenu>
             {menuItems.map(item => (
