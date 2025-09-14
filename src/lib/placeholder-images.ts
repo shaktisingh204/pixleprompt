@@ -1,4 +1,5 @@
-import { PlaceholderImageModel } from '@/lib/db';
+
+import dbConnect, { PlaceholderImageModel } from '@/lib/db';
 
 export type ImagePlaceholder = {
   id: string;
@@ -9,6 +10,7 @@ export type ImagePlaceholder = {
 
 export async function getPlaceholderImages(): Promise<ImagePlaceholder[]> {
   try {
+    await dbConnect();
     const images = await PlaceholderImageModel.find().lean().exec();
     return images as ImagePlaceholder[];
   } catch (error) {

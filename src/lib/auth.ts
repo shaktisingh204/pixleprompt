@@ -3,7 +3,7 @@
 
 import {cookies} from 'next/headers';
 import type {User} from '@/lib/definitions';
-import {UserModel} from '@/lib/db';
+import dbConnect, {UserModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 const SESSION_COOKIE_NAME = 'session';
@@ -14,6 +14,7 @@ export async function getSession(): Promise<User | null> {
   if (!sessionCookie) return null;
 
   try {
+    await dbConnect();
     const user = await UserModel.findOne({ email: sessionCookie }).lean().exec();
     return (user as User) || null;
   } catch (error) {
@@ -23,6 +24,7 @@ export async function getSession(): Promise<User | null> {
 }
 
 export async function signIn(email: string, password_input: string): Promise<void> {
+  await dbConnect();
   const user = await UserModel.findOne({ email: email }).lean().exec();
 
   if (!user || user.password !== password_input) {
@@ -38,6 +40,7 @@ export async function signIn(email: string, password_input: string): Promise<voi
 }
 
 export async function signUp(name: string, email: string, password_input: string): Promise<void> {
+    await dbConnect();
     const existingUser = await UserModel.findOne({ email: email }).lean().exec();
     if (existingUser) {
         throw new Error('An account with this email already exists.');

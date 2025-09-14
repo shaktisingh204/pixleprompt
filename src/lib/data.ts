@@ -1,8 +1,10 @@
+
 import type {Prompt, Category, User} from '@/lib/definitions';
-import { UserModel, CategoryModel, PromptModel } from '@/lib/db';
+import dbConnect, { UserModel, CategoryModel, PromptModel } from '@/lib/db';
 
 async function getUsers(): Promise<User[]> {
   try {
+    await dbConnect();
     const users = await UserModel.find().lean().exec();
     return users as User[];
   } catch (error) {
@@ -13,6 +15,7 @@ async function getUsers(): Promise<User[]> {
 
 async function getCategories(): Promise<Category[]> {
   try {
+    await dbConnect();
     const categories = await CategoryModel.find().lean().exec();
     return categories as Category[];
   } catch (error) {
@@ -23,6 +26,7 @@ async function getCategories(): Promise<Category[]> {
 
 async function getPrompts(): Promise<Prompt[]> {
   try {
+    await dbConnect();
     const prompts = await PromptModel.find().lean().exec();
     return prompts as Prompt[];
   } catch (error) {
