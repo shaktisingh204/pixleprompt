@@ -1,19 +1,7 @@
-
 'use client';
 
 import type {User} from '@/lib/definitions';
 import {getSession} from '@/lib/auth';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarProvider,
-  SidebarInset,
-  useSidebar,
-} from '@/components/ui/sidebar';
 import Link from 'next/link';
 import {
   Home,
@@ -27,6 +15,7 @@ import {usePathname} from 'next/navigation';
 import {useEffect, useState} from 'react';
 import {cn} from '@/lib/utils';
 import {Header} from '@/components/layout/header';
+import {Footer} from '@/components/layout/footer';
 
 function MainContent({
   children,
@@ -35,35 +24,44 @@ function MainContent({
   children: React.ReactNode;
   user: User | null;
 }) {
-  const {isMobile} = useSidebar();
   const pathname = usePathname();
+  
+  const bottomNavItems = [
+    {href: '/', label: 'Browse', icon: LayoutGrid},
+    {href: '/contact', label: 'Contact', icon: Mail},
+  ];
+
+  // In a real app, you'd likely have a better way to detect mobile
+  const [isMobile, setIsMobile] = useState(false);
+   useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full min-h-screen">
        <Header user={user} />
       <main className="flex-1 overflow-y-auto">{children}</main>
+      <Footer />
       {isMobile && (
          <div className="fixed bottom-0 left-0 z-50 w-full h-16 border-t bg-background">
          <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
-           <Link
-             href="/"
-             className={cn(
-               'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
-                pathname === '/' ? 'text-primary' : 'text-muted-foreground'
-             )}
-           >
-             <LayoutGrid className="w-5 h-5 mb-1" />
-             <span className="text-sm">Browse</span>
-           </Link>
-           <Link
-             href="/submit-prompt"
-             className={cn(
-               'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
-               pathname === '/submit-prompt' ? 'text-primary' : 'text-muted-foreground'
-             )}
-           >
-             <PlusCircle className="w-5 h-5 mb-1" />
-             <span className="text-sm">Submit</span>
-           </Link>
+           {bottomNavItems.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
+                  pathname === item.href ? 'text-primary' : 'text-muted-foreground'
+                )}
+              >
+                <item.icon className="w-5 h-5 mb-1" />
+                <span className="text-sm">{item.label}</span>
+              </Link>
+           ))}
          </div>
        </div>
       )}
@@ -73,7 +71,6 @@ function MainContent({
 
 
 export function AppShell({children}: {children: React.ReactNode}) {
-  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -84,39 +81,5 @@ export function AppShell({children}: {children: React.ReactNode}) {
     fetchSession();
   }, []);
 
-  const menuItems = [
-    {href: '/', label: 'Home', icon: Home},
-    {href: '/terms', label: 'Terms', icon: FileText},
-    {href: '/privacy', label: 'Privacy', icon: Shield},
-    {href: '/contact', label: 'Contact', icon: Mail},
-  ];
-
-  return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon" variant="sidebar">
-        <SidebarHeader className="h-16 border-b" />
-        <SidebarContent>
-          <SidebarMenu>
-            {menuItems.map(item => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={{children: item.label}}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-      </Sidebar>
-      <SidebarInset>
-         <MainContent user={user}>{children}</MainContent>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+  return <MainContent user={user}>{children}</MainContent>;
 }

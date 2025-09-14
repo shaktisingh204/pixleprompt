@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const session = await getSession();
   const {pathname} = request.nextUrl;
 
-  const protectedRoutes = ['/submit-prompt', '/admin'];
+  const protectedRoutes = ['/admin', '/submit-prompt'];
 
   // If user is not authenticated and is trying to access a protected route, redirect to login
   if (!session && protectedRoutes.some(path => pathname.startsWith(path))) {
@@ -18,10 +18,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // If a non-admin user tries to access the admin panel, redirect to home
-  if (session && pathname.startsWith('/admin') && session.role !== 'admin') {
+  // If a non-admin user tries to access an admin-only route, redirect to home
+  if (session && protectedRoutes.some(path => pathname.startsWith(path)) && session.role !== 'admin') {
     return NextResponse.redirect(new URL('/', request.url));
   }
+
 
   return NextResponse.next();
 }
