@@ -3,6 +3,7 @@ import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
 import {GeistSans} from 'geist/font/sans';
 import {GeistMono} from 'geist/font/mono';
+import {AppShell} from '@/components/layout/app-shell';
 
 export const metadata: Metadata = {
   title: 'PromptPal',
@@ -21,7 +22,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-body antialiased">
-        {children}
+        <AppShell>{children}</AppShell>
         <Toaster />
       </body>
     </html>

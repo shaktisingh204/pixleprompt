@@ -17,17 +17,15 @@ export function Header({user}: HeaderProps) {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo />
           </Link>
-          <nav className="hidden md:flex">
-            {user?.role === 'admin' && (
-              <Button variant="ghost" asChild>
-                <Link href="/admin">Admin Panel</Link>
-              </Button>
-            )}
-          </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-4">
           {user ? (
             <>
+               {user.role === 'admin' && (
+                <Button variant="outline" asChild>
+                  <Link href="/admin">Admin Panel</Link>
+                </Button>
+              )}
               <Button asChild>
                 <Link href="/submit-prompt">
                   <PlusCircle className="mr-2" />

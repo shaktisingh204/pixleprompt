@@ -1,8 +1,7 @@
 import {notFound} from 'next/navigation';
 import {getPrompts, getCategories, getUsers} from '@/lib/data';
-import {PlaceHolderImages} from '@/lib/placeholder-images';
+import {getPlaceholderImages} from '@/lib/placeholder-images';
 import type {FullPrompt, Prompt, Category, User} from '@/lib/definitions';
-import {Header} from '@/components/layout/header';
 import {getSession} from '@/lib/auth';
 import Image from 'next/image';
 import {Badge} from '@/components/ui/badge';
@@ -16,10 +15,11 @@ import {Separator} from '@/components/ui/separator';
 export default async function PromptPage({params}: {params: {id: string}}) {
   const session = await getSession();
   
-  const [allPrompts, allCategories, allUsers] = await Promise.all([
+  const [allPrompts, allCategories, allUsers, placeholderImages] = await Promise.all([
     getPrompts(),
     getCategories(),
     getUsers(),
+    getPlaceholderImages()
   ]);
 
   const prompt = allPrompts.find((p: Prompt) => p.id === params.id);
@@ -28,7 +28,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
   }
 
   const category = allCategories.find((c: Category) => c.id === prompt.categoryId);
-  const image = PlaceHolderImages.find(i => i.id === prompt.imageId);
+  const image = placeholderImages.find(i => i.id === prompt.imageId);
   const submitter = prompt.submittedBy ? allUsers.find((u: User) => u.id === prompt.submittedBy) : null;
 
   const CategoryIcon = category ? (Lucide[category.icon] as Lucide.LucideIcon) : Lucide.AlertCircle;
@@ -46,7 +46,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
     .slice(0, 3) // Get up to 3 related prompts
     .map(p => {
       const pCategory = allCategories.find(c => c.id === p.categoryId);
-      const pImage = PlaceHolderImages.find(i => i.id === p.imageId);
+      const pImage = placeholderImages.find(i => i.id === p.imageId);
       return {
         ...p,
         category: pCategory || {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'},
@@ -57,7 +57,6 @@ export default async function PromptPage({params}: {params: {id: string}}) {
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <Header user={session} />
       <main className="flex-1">
         <div className="container mx-auto py-8 px-4">
           <div className="mb-4">

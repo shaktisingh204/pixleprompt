@@ -1,6 +1,5 @@
 import {getSession} from '@/lib/auth';
 import {getCategories} from '@/lib/data';
-import {Header} from '@/components/layout/header';
 import {SubmitPromptForm} from '@/components/prompts/submit-prompt-form';
 import Link from 'next/link';
 import {Button} from '@/components/ui/button';
@@ -12,7 +11,6 @@ export default async function SubmitPromptPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <Header user={user} />
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="mx-auto grid w-full max-w-2xl gap-4">
           <div>

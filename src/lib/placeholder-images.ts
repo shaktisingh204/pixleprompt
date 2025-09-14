@@ -1,4 +1,6 @@
-import data from './placeholder-images.json';
+import pool from '@/lib/db';
+import {RowDataPacket} from 'mysql2';
+
 
 export type ImagePlaceholder = {
   id: string;
@@ -7,4 +9,7 @@ export type ImagePlaceholder = {
   imageHint: string;
 };
 
-export const PlaceHolderImages: ImagePlaceholder[] = data.placeholderImages;
+export async function getPlaceholderImages(): Promise<ImagePlaceholder[]> {
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM placeholder_images');
+    return rows as ImagePlaceholder[];
+}
