@@ -18,9 +18,16 @@ export function CategoryFilters({
 }: CategoryFiltersProps) {
   const totalPrompts = categories.reduce((sum, cat) => sum + cat.promptCount, 0);
 
-  const getIcon = (iconName: Category['icon']) => {
+  const getIcon = (iconName: Category['icon'], isActive: boolean) => {
     const Icon = Lucide[iconName] as Lucide.LucideIcon;
-    return Icon ? <Icon className="mr-2 h-4 w-4 text-accent" /> : null;
+    return Icon ? (
+      <Icon
+        className={cn(
+          'mr-2 h-4 w-4 text-accent transition-colors group-hover:text-primary',
+          isActive && 'text-primary'
+        )}
+      />
+    ) : null;
   };
 
   return (
@@ -38,23 +45,26 @@ export function CategoryFilters({
           {totalPrompts}
         </span>
       </Button>
-      {categories.map(category => (
-        <Button
-          key={category.id}
-          variant="ghost"
-          onClick={() => onSelectCategory(category.id)}
-          className={cn(
-            'h-auto py-2 px-4',
-            selectedCategory === category.id ? 'bg-primary/10 text-primary' : ''
-          )}
-        >
-          {getIcon(category.icon)}
-          {category.name}
-          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            {category.promptCount}
-          </span>
-        </Button>
-      ))}
+      {categories.map(category => {
+        const isActive = selectedCategory === category.id;
+        return (
+          <Button
+            key={category.id}
+            variant="ghost"
+            onClick={() => onSelectCategory(category.id)}
+            className={cn(
+              'group h-auto py-2 px-4',
+              isActive ? 'bg-primary/10 text-primary' : ''
+            )}
+          >
+            {getIcon(category.icon, isActive)}
+            {category.name}
+            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              {category.promptCount}
+            </span>
+          </Button>
+        );
+      })}
     </div>
   );
 }
