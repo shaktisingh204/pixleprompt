@@ -1,3 +1,6 @@
+
+'use server';
+
 import {cookies} from 'next/headers';
 import {users, type User} from '@/lib/data';
 
