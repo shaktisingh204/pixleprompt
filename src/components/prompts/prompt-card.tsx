@@ -5,6 +5,7 @@ import {Button} from '@/components/ui/button';
 import {Heart, Copy} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import * as Lucide from 'lucide-react';
+import {useEffect, useState} from 'react';
 
 type PromptCardProps = {
   prompt: FullPrompt;
@@ -15,9 +16,15 @@ type PromptCardProps = {
 export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardProps) {
   const CategoryIcon = Lucide[prompt.category.icon] as Lucide.LucideIcon;
 
-  // Placeholder counts
-  const favoritesCount = Math.floor(Math.random() * 2000) + 100;
-  const copiesCount = Math.floor(Math.random() * 5000) + 200;
+  const [counts, setCounts] = useState({favorites: 0, copies: 0});
+
+  useEffect(() => {
+    // Generate random counts only on the client-side to avoid hydration errors
+    setCounts({
+      favorites: Math.floor(Math.random() * 2000) + 100,
+      copies: Math.floor(Math.random() * 5000) + 200,
+    });
+  }, []);
 
   return (
     <div className="group relative aspect-[3/4] overflow-hidden rounded-lg">
@@ -57,11 +64,11 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
         <div className="flex w-full items-center justify-end gap-4 text-sm font-medium">
           <div className="flex items-center gap-1.5">
             <Heart className="h-4 w-4" />
-            <span>{(favoritesCount / 1000).toFixed(1)}k</span>
+            <span>{(counts.favorites / 1000).toFixed(1)}k</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Copy className="h-4 w-4" />
-            <span>{(copiesCount / 1000).toFixed(1)}k</span>
+            <span>{(counts.copies / 1000).toFixed(1)}k</span>
           </div>
         </div>
       </div>
