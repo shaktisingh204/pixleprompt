@@ -10,9 +10,12 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Alegreya', 'serif'],
-        headline: ['Belleza', 'sans-serif'],
+        body: ['Poppins', 'sans-serif'],
+        headline: ['Poppins', 'sans-serif'],
         code: ['monospace'],
+      },
+      fontWeight: {
+        bold: '700',
       },
       colors: {
         background: 'hsl(var(--background))',
