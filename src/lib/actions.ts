@@ -7,9 +7,8 @@ import {revalidatePath} from 'next/cache';
 import {getSession, signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import pool from '@/lib/db';
+import {Prompt, PromptModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import type {Prompt} from '@/lib/definitions';
 
 
 const loginSchema = z.object({
@@ -161,19 +160,21 @@ export async function submitPrompt(
 
     const {text, categoryId, image} = validatedFields.data;
 
-    const newPrompt: Prompt = {
+    const newPromptData: Partial<Prompt> = {
       id: `p-${uuidv4()}`,
       text,
       categoryId,
       imageId: `img_prompt_${Date.now()}`,
-      status: 'pending' as const,
+      status: 'pending',
       submittedBy: session.id,
     };
 
     // In a real app, you'd handle the file upload here.
     console.log('Image received:', image.name, image.size);
+    
+    const newPrompt = new PromptModel(newPromptData);
+    await newPrompt.save();
 
-    await pool.query('INSERT INTO prompts SET ?', newPrompt);
     console.log('New prompt submitted for review:', newPrompt);
 
     revalidatePath('/');
@@ -193,7 +194,7 @@ export async function approvePrompt(promptId: string) {
     throw new Error('Unauthorized');
   }
 
-  await pool.query('UPDATE prompts SET status = ? WHERE id = ?', ['approved', promptId]);
+  await PromptModel.findOneAndUpdate({ id: promptId }, { status: 'approved' });
   
   revalidatePath('/admin');
   revalidatePath('/');
@@ -205,9 +206,8 @@ export async function rejectPrompt(promptId: string) {
     throw new Error('Unauthorized');
   }
   
-  await pool.query('DELETE FROM prompts WHERE id = ?', [promptId]);
+  await PromptModel.deleteOne({ id: promptId });
 
   revalidatePath('/admin');
   revalidatePath('/');
 }
-

@@ -1,11 +1,10 @@
 import type {Prompt, Category, User} from '@/lib/definitions';
-import pool from '@/lib/db';
-import {RowDataPacket} from 'mysql2';
+import { UserModel, CategoryModel, PromptModel } from '@/lib/db';
 
 async function getUsers(): Promise<User[]> {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, email, role, password FROM users');
-    return rows as User[];
+    const users = await UserModel.find().lean().exec();
+    return users as User[];
   } catch (error) {
     console.error('Failed to fetch users:', error);
     return [];
@@ -14,8 +13,8 @@ async function getUsers(): Promise<User[]> {
 
 async function getCategories(): Promise<Category[]> {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM categories');
-    return rows as Category[];
+    const categories = await CategoryModel.find().lean().exec();
+    return categories as Category[];
   } catch (error) {
     console.error('Failed to fetch categories:', error);
     return [];
@@ -24,8 +23,8 @@ async function getCategories(): Promise<Category[]> {
 
 async function getPrompts(): Promise<Prompt[]> {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM prompts');
-    return rows as Prompt[];
+    const prompts = await PromptModel.find().lean().exec();
+    return prompts as Prompt[];
   } catch (error) {
     console.error('Failed to fetch prompts:', error);
     return [];

@@ -1,7 +1,7 @@
 import type {LucideIcon} from 'lucide-react';
-import { RowDataPacket } from 'mysql2';
+import type { Document } from 'mongoose';
 
-export type User = {
+export interface User extends Document {
   id: string;
   name: string;
   email: string;
@@ -9,13 +9,13 @@ export type User = {
   role: 'admin' | 'user';
 };
 
-export type Category = {
+export interface Category extends Document {
   id:string;
   name: string;
   icon: keyof typeof import('lucide-react').icons;
 };
 
-export type Prompt = {
+export interface Prompt extends Document {
   id: string;
   text: string;
   categoryId: string;
@@ -29,7 +29,3 @@ export type FullPrompt = Prompt & {
   imageUrl: string;
   imageHint: string;
 };
-
-export interface UserRow extends User, RowDataPacket {}
-export interface CategoryRow extends Category, RowDataPacket {}
-export interface PromptRow extends Prompt, RowDataPacket {}

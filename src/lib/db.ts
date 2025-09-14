@@ -1,116 +1,127 @@
+import mongoose, { Schema, model, models } from 'mongoose';
+import type { User, Category, Prompt } from '@/lib/definitions';
+import { ImagePlaceholder } from './placeholder-images';
 
+const MONGODB_URI = process.env.MONGODB_URI;
 
-import mysql from 'mysql2/promise';
+if (!MONGODB_URI) {
+  throw new Error(
+    'Please define the MONGODB_URI environment variable inside .env'
+  );
+}
 
-const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+let cached = global.mongoose;
 
-async function createTables() {
-  const connection = await pool.getConnection();
-  try {
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id VARCHAR(255) PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL,
-        role ENUM('admin', 'user') NOT NULL DEFAULT 'user'
-      );
-    `);
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS categories (
-        id VARCHAR(255) PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        icon VARCHAR(255) NOT NULL
-      );
-    `);
-
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS prompts (
-        id VARCHAR(255) PRIMARY KEY,
-        text TEXT NOT NULL,
-        categoryId VARCHAR(255) NOT NULL,
-        imageId VARCHAR(255) NOT NULL,
-        status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending',
-        submittedBy VARCHAR(255),
-        FOREIGN KEY (categoryId) REFERENCES categories(id),
-        FOREIGN KEY (submittedBy) REFERENCES users(id)
-      );
-    `);
-
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS placeholder_images (
-        id VARCHAR(255) PRIMARY KEY,
-        description TEXT NOT NULL,
-        imageUrl VARCHAR(255) NOT NULL,
-        imageHint VARCHAR(255) NOT NULL
-      );
-    `);
-    
-    // Seed initial data if tables are empty
-    const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
-    if (Array.isArray(users) && users[0] && 'count' in users[0] && (users[0] as { count: number }).count === 0) {
-        await connection.query(`
-            INSERT INTO users (id, name, email, password, role) VALUES
-            ('user-1', 'Admin User', 'admin@example.com', 'password123', 'admin'),
-            ('user-2', 'Regular User', 'user@example.com', 'password123', 'user');
-        `);
-    }
-
-    const [categories] = await connection.query('SELECT COUNT(*) as count FROM categories');
-     if (Array.isArray(categories) && categories[0] && 'count' in categories[0] && (categories[0] as { count: number }).count === 0) {
-        await connection.query(`
-            INSERT INTO categories (id, name, icon) VALUES
-            ('cat-1', 'Art', 'Palette'),
-            ('cat-2', 'Writing', 'PenTool'),
-            ('cat-3', 'Photography', 'Camera'),
-            ('cat-4', 'Music', 'Music'),
-            ('cat-5', 'Development', 'Code');
-        `);
-    }
-
-    const [images] = await connection.query('SELECT COUNT(*) as count FROM placeholder_images');
-    if (Array.isArray(images) && images[0] && 'count' in images[0] && (images[0] as { count: number }).count === 0) {
-        await connection.query(`
-            INSERT INTO placeholder_images (id, description, imageUrl, imageHint) VALUES
-            ('img_prompt_1', 'A futuristic cityscape', 'https://picsum.photos/seed/prompt1/600/400', 'futuristic cityscape'),
-            ('img_prompt_2', 'A serene forest path', 'https://picsum.photos/seed/prompt2/600/400', 'forest path'),
-            ('img_prompt_3', 'A cup of coffee', 'https://picsum.photos/seed/prompt3/600/400', 'coffee cup'),
-            ('img_prompt_4', 'An astronaut in space', 'https://picsum.photos/seed/prompt4/600/400', 'astronaut space'),
-            ('img_prompt_5', 'A vintage record player', 'https://picsum.photos/seed/prompt5/600/400', 'record player'),
-            ('img_prompt_6', 'A classic muscle car', 'https://picsum.photos/seed/prompt6/600/400', 'muscle car');
-        `);
-    }
-    
-    const [prompts] = await connection.query('SELECT COUNT(*) as count FROM prompts');
-    if (Array.isArray(prompts) && prompts[0] && 'count' in prompts[0] && (prompts[0] as { count: number }).count === 0) {
-        await connection.query(`
-            INSERT INTO prompts (id, text, categoryId, imageId, status, submittedBy) VALUES
-            ('p-1', 'A futuristic cityscape at dusk, with flying vehicles and holographic ads, in the style of Blade Runner.', 'cat-1', 'img_prompt_1', 'approved', 'user-1'),
-            ('p-2', 'Compose a blog post titled "5 Tips for More Productive Mornings" aimed at young professionals.', 'cat-2', 'img_prompt_2', 'approved', 'user-2'),
-            ('p-3', 'A close-up shot of a vintage camera on a wooden table, with soft, warm lighting.', 'cat-3', 'img_prompt_3', 'approved', 'user-1'),
-            ('p-4', 'Create a lo-fi hip hop track with a melancholic melody and a steady, relaxing beat.', 'cat-4', 'img_prompt_4', 'approved', 'user-2'),
-            ('p-5', 'Generate a Python script that automates daily file backups to a cloud storage service.', 'cat-5', 'img_prompt_5', 'approved', 'user-1'),
-            ('p-6', 'Design a minimalist logo for a new tech startup called "Innovate".', 'cat-1', 'img_prompt_6', 'approved', 'user-2');
-        `);
-    }
-
-
-  } finally {
-    connection.release();
+async function dbConnect() {
+  if (cached.conn) {
+    return cached.conn;
   }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+      return mongoose;
+    });
+  }
+  cached.conn = await cached.promise;
+  await seedData();
+  return cached.conn;
 }
 
 
-// Initialize tables on startup
-createTables().catch(console.error);
+const UserSchema = new Schema<User>({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['admin', 'user'], required: true, default: 'user' },
+});
 
-export default pool;
+const CategorySchema = new Schema<Category>({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  icon: { type: String, required: true },
+});
+
+const PromptSchema = new Schema<Prompt>({
+  id: { type: String, required: true, unique: true },
+  text: { type: String, required: true },
+  categoryId: { type: String, required: true, ref: 'Category' },
+  imageId: { type: String, required: true },
+  status: { type: String, enum: ['pending', 'approved'], required: true, default: 'pending' },
+  submittedBy: { type: String, ref: 'User' },
+});
+
+const PlaceholderImageSchema = new Schema<ImagePlaceholder>({
+    id: { type: String, required: true, unique: true },
+    description: { type: String, required: true },
+    imageUrl: { type: String, required: true },
+    imageHint: { type: String, required: true },
+});
+
+export const UserModel = models.User || model<User>('User', UserSchema);
+export const CategoryModel = models.Category || model<Category>('Category', CategorySchema);
+export const PromptModel = models.Prompt || model<Prompt>('Prompt', PromptSchema);
+export const PlaceholderImageModel = models.PlaceholderImage || model<ImagePlaceholder>('PlaceholderImage', PlaceholderImageSchema);
+
+export { User, Category, Prompt, ImagePlaceholder };
+
+
+async function seedData() {
+    try {
+        const userCount = await UserModel.countDocuments();
+        if (userCount === 0) {
+            await UserModel.insertMany([
+                { id: 'user-1', name: 'Admin User', email: 'admin@example.com', password: 'password123', role: 'admin' },
+                { id: 'user-2', name: 'Regular User', email: 'user@example.com', password: 'password123', role: 'user' },
+            ]);
+        }
+
+        const categoryCount = await CategoryModel.countDocuments();
+        if (categoryCount === 0) {
+            await CategoryModel.insertMany([
+                { id: 'cat-1', name: 'Art', icon: 'Palette' },
+                { id: 'cat-2', name: 'Writing', icon: 'PenTool' },
+                { id: 'cat-3', name: 'Photography', icon: 'Camera' },
+                { id: 'cat-4', name: 'Music', icon: 'Music' },
+                { id: 'cat-5', name: 'Development', icon: 'Code' },
+            ]);
+        }
+
+        const imageCount = await PlaceholderImageModel.countDocuments();
+        if (imageCount === 0) {
+            await PlaceholderImageModel.insertMany([
+                { id: 'img_prompt_1', description: 'A futuristic cityscape', imageUrl: 'https://picsum.photos/seed/prompt1/600/400', imageHint: 'futuristic cityscape' },
+                { id: 'img_prompt_2', description: 'A serene forest path', imageUrl: 'https://picsum.photos/seed/prompt2/600/400', imageHint: 'forest path' },
+                { id: 'img_prompt_3', description: 'A cup of coffee', imageUrl: 'https://picsum.photos/seed/prompt3/600/400', imageHint: 'coffee cup' },
+                { id: 'img_prompt_4', description: 'An astronaut in space', imageUrl: 'https://picsum.photos/seed/prompt4/600/400', imageHint: 'astronaut space' },
+                { id: 'img_prompt_5', description: 'A vintage record player', imageUrl: 'https://picsum.photos/seed/prompt5/600/400', imageHint: 'record player' },
+                { id: 'img_prompt_6', description: 'A classic muscle car', imageUrl: 'https://picsum.photos/seed/prompt6/600/400', imageHint: 'muscle car' },
+            ]);
+        }
+
+        const promptCount = await PromptModel.countDocuments();
+        if (promptCount === 0) {
+            await PromptModel.insertMany([
+                { id: 'p-1', text: 'A futuristic cityscape at dusk, with flying vehicles and holographic ads, in the style of Blade Runner.', categoryId: 'cat-1', imageId: 'img_prompt_1', status: 'approved', submittedBy: 'user-1' },
+                { id: 'p-2', text: 'Compose a blog post titled "5 Tips for More Productive Mornings" aimed at young professionals.', categoryId: 'cat-2', imageId: 'img_prompt_2', status: 'approved', submittedBy: 'user-2' },
+                { id: 'p-3', text: 'A close-up shot of a vintage camera on a wooden table, with soft, warm lighting.', categoryId: 'cat-3', imageId: 'img_prompt_3', status: 'approved', submittedBy: 'user-1' },
+                { id: 'p-4', text: 'Create a lo-fi hip hop track with a melancholic melody and a steady, relaxing beat.', categoryId: 'cat-4', imageId: 'img_prompt_4', status: 'approved', submittedBy: 'user-2' },
+                { id: 'p-5', text: 'Generate a Python script that automates daily file backups to a cloud storage service.', categoryId: 'cat-5', imageId: 'img_prompt_5', status: 'approved', submittedBy: 'user-1' },
+                { id: 'p-6', text: 'Design a minimalist logo for a new tech startup called "Innovate".', categoryId: 'cat-1', imageId: 'img_prompt_6', status: 'approved', submittedBy: 'user-2' },
+            ]);
+        }
+    } catch (error) {
+        console.error("Error seeding data:", error);
+    }
+}
+
+
+export default dbConnect;
