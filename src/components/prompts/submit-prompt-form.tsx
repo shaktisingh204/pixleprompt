@@ -45,7 +45,7 @@ export function SubmitPromptForm({categories}: SubmitPromptFormProps) {
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Your Prompt</CardTitle>
           <CardDescription>
-            Write a clear and concise prompt that will inspire creative outputs.
+            Write a clear and concise prompt that will inspire creative outputs. As an admin, submitted prompts are automatically approved.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -97,7 +97,7 @@ export function SubmitPromptForm({categories}: SubmitPromptFormProps) {
               <CheckCircle className="h-4 w-4" />
               <AlertTitle>Prompt Submitted!</AlertTitle>
               <AlertDescription>
-                Thank you for your contribution. Your prompt is now pending review.
+                Thank you for your contribution. Your prompt has been added to the library.
               </AlertDescription>
             </Alert>
           )}
@@ -121,7 +121,7 @@ function SubmitButton() {
   const {pending} = useFormStatus();
   return (
     <Button type="submit" className="w-full" disabled={pending} aria-disabled={pending}>
-      {pending ? 'Submitting...' : 'Submit for Review'}
+      {pending ? 'Submitting...' : 'Submit Prompt'}
     </Button>
   );
 }

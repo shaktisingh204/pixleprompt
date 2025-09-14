@@ -7,7 +7,7 @@ import {revalidatePath} from 'next/cache';
 import {getSession, signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import {Prompt, PromptModel} from '@/lib/db';
+import {Prompt, PromptModel, CategoryModel, Category} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -165,7 +165,7 @@ export async function submitPrompt(
       text,
       categoryId,
       imageId: `img_prompt_${Date.now()}`,
-      status: 'pending',
+      status: session.role === 'admin' ? 'approved' : 'pending',
       submittedBy: session.id,
     };
 
@@ -175,11 +175,11 @@ export async function submitPrompt(
     const newPrompt = new PromptModel(newPromptData);
     await newPrompt.save();
 
-    console.log('New prompt submitted for review:', newPrompt);
+    console.log('New prompt submitted:', newPrompt);
 
     revalidatePath('/');
     revalidatePath('/admin');
-    return {success: true, message: 'Prompt submitted successfully for review!'};
+    return {success: true, message: 'Prompt submitted successfully!'};
   } catch (error) {
     if (error instanceof Error) {
       return {errors: {server: [error.message]}};
@@ -210,4 +210,102 @@ export async function rejectPrompt(promptId: string) {
 
   revalidatePath('/admin');
   revalidatePath('/');
+}
+
+export async function deletePrompt(promptId: string) {
+  const session = await getSession();
+  if (session?.role !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+  
+  await PromptModel.deleteOne({ id: promptId });
+
+  revalidatePath('/admin');
+  revalidatePath('/');
+}
+
+const categorySchema = z.object({
+  name: z.string().min(2, 'Category name must be at least 2 characters.'),
+  icon: z.string().min(1, 'Icon is required.'),
+});
+
+export type CategoryState = {
+  errors?: {
+    name?: string[];
+    icon?: string[];
+    server?: string[];
+  };
+  message?: string | null;
+  success?: boolean;
+}
+
+export async function createCategory(prevState: CategoryState | undefined, formData: FormData): Promise<CategoryState> {
+    const session = await getSession();
+    if (session?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const validatedFields = categorySchema.safeParse(Object.fromEntries(formData.entries()));
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors
+        };
+    }
+    
+    const { name, icon } = validatedFields.data;
+
+    try {
+        const newCategory = new CategoryModel({
+            id: `cat-${uuidv4()}`,
+            name,
+            icon,
+        });
+        await newCategory.save();
+        revalidatePath('/admin');
+        return { success: true, message: 'Category created successfully.' };
+    } catch (error) {
+        return { errors: { server: ['Failed to create category.'] } };
+    }
+}
+
+export async function updateCategory(categoryId: string, prevState: CategoryState | undefined, formData: FormData): Promise<CategoryState> {
+    const session = await getSession();
+    if (session?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const validatedFields = categorySchema.safeParse(Object.fromEntries(formData.entries()));
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors
+        };
+    }
+    
+    const { name, icon } = validatedFields.data;
+
+    try {
+        await CategoryModel.findOneAndUpdate({ id: categoryId }, { name, icon });
+        revalidatePath('/admin');
+        return { success: true, message: 'Category updated successfully.' };
+    } catch (error) {
+        return { errors: { server: ['Failed to update category.'] } };
+    }
+}
+
+export async function deleteCategory(categoryId: string) {
+    const session = await getSession();
+    if (session?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    try {
+        await CategoryModel.deleteOne({ id: categoryId });
+        await PromptModel.updateMany({ categoryId: categoryId }, { categoryId: 'cat-0' }); // Re-assign prompts to 'Uncategorized'
+        revalidatePath('/admin');
+        revalidatePath('/');
+    } catch (error) {
+        console.error("Failed to delete category:", error);
+    }
 }
