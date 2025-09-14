@@ -14,7 +14,7 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between sm:flex-row">
           <Logo />
           <p className="mt-4 text-sm text-muted-foreground sm:mt-0">
-            © {new Date().getFullYear()} PromptPal. All Rights Reserved.
+            © {new Date().getFullYear()} PixelPrompts. All Rights Reserved.
           </p>
           <div className="mt-4 flex items-center gap-4 sm:mt-0">
             {footerLinks.map(link => (

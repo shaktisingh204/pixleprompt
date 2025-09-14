@@ -6,7 +6,7 @@ import {GeistMono} from 'geist/font/mono';
 import {AppShell} from '@/components/layout/app-shell';
 
 export const metadata: Metadata = {
-  title: 'PromptPal',
+  title: 'PixelPrompts',
   description: 'Your creative partner for AI prompts',
 };
 

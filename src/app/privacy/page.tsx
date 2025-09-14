@@ -4,9 +4,9 @@ export default function PrivacyPage() {
       <div className="prose prose-lg dark:prose-invert max-w-4xl mx-auto">
         <h1>Privacy Policy</h1>
         <p>
-          Your privacy is important to us. It is PromptPal's policy to respect your privacy
+          Your privacy is important to us. It is PixelPrompts's policy to respect your privacy
           regarding any information we may collect from you across our website,
-          https://promptpal.com, and other sites we own and operate.
+          and other sites we own and operate.
         </p>
         <p>
           We only ask for personal information when we truly need it to provide a service to you. We
