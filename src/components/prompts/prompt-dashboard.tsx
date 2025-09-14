@@ -1,12 +1,9 @@
 'use client';
 
 import {useState, useMemo} from 'react';
-import Link from 'next/link';
 import type {FullPrompt, Category} from '@/lib/definitions';
 import {CategoryFilters} from './category-filters';
 import {PromptCard} from './prompt-card';
-import {Button} from '@/components/ui/button';
-import {PlusCircle} from 'lucide-react';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 
 type PromptDashboardProps = {
@@ -64,12 +61,6 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
               <TabsTrigger value="all">All Prompts</TabsTrigger>
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
             </TabsList>
-            <Button asChild>
-              <Link href="/submit-prompt">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Submit Prompt
-              </Link>
-            </Button>
           </div>
           <div className="my-4">
             <CategoryFilters

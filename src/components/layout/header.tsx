@@ -3,6 +3,7 @@ import {UserNav} from '@/components/auth/user-nav';
 import {Logo} from '@/components/logo';
 import Link from 'next/link';
 import {Button} from '@/components/ui/button';
+import {PlusCircle} from 'lucide-react';
 
 type HeaderProps = {
   user: User | null;
@@ -16,14 +17,30 @@ export function Header({user}: HeaderProps) {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo />
           </Link>
-          {user?.role === 'admin' && (
-            <Button variant="ghost" asChild>
-              <Link href="/admin">Admin Panel</Link>
+          <nav className="hidden md:flex">
+            {user?.role === 'admin' && (
+              <Button variant="ghost" asChild>
+                <Link href="/admin">Admin Panel</Link>
+              </Button>
+            )}
+          </nav>
+        </div>
+        <div className="flex flex-1 items-center justify-end space-x-4">
+          {user ? (
+            <>
+              <Button asChild>
+                <Link href="/submit-prompt">
+                  <PlusCircle className="mr-2" />
+                  Submit Prompt
+                </Link>
+              </Button>
+              <UserNav user={user} />
+            </>
+          ) : (
+            <Button asChild>
+              <Link href="/login">Login</Link>
             </Button>
           )}
-        </div>
-        <div className="flex flex-1 items-center justify-end space-x-2">
-          <UserNav user={user} />
         </div>
       </div>
     </header>
