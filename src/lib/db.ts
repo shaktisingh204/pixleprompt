@@ -64,6 +64,7 @@ const PlaceholderImageSchema = new Schema<ImagePlaceholder>({
     description: { type: String, required: true },
     imageUrl: { type: String, required: true },
     imageHint: { type: String, required: true },
+    uploadedBy: { type: String, ref: 'User', required: false },
 });
 
 export const UserModel = models.User || model<User>('User', UserSchema);
@@ -87,6 +88,7 @@ async function seedData() {
         const categoryCount = await CategoryModel.countDocuments();
         if (categoryCount === 0) {
             await CategoryModel.insertMany([
+                { id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'},
                 { id: 'cat-1', name: 'Art', icon: 'Palette' },
                 { id: 'cat-2', name: 'Writing', icon: 'PenTool' },
                 { id: 'cat-3', name: 'Photography', icon: 'Camera' },
@@ -125,3 +127,5 @@ async function seedData() {
 
 
 export default dbConnect;
+
+    

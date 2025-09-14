@@ -7,7 +7,7 @@ import {revalidatePath} from 'next/cache';
 import {getSession, signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import {Prompt, PromptModel, CategoryModel, Category} from '@/lib/db';
+import {Prompt, PromptModel, CategoryModel, Category, PlaceholderImageModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -160,22 +160,34 @@ export async function submitPrompt(
 
     const {text, categoryId, image} = validatedFields.data;
 
+    const imageId = `img_prompt_${Date.now()}_${uuidv4()}`;
+
+    // Convert image to base64
+    const imageBuffer = await image.arrayBuffer();
+    const imageBase64 = Buffer.from(imageBuffer).toString('base64');
+    const imageDataUri = `data:${image.type};base64,${imageBase64}`;
+
+    // Save image to PlaceholderImage collection
+    const newImage = new PlaceholderImageModel({
+      id: imageId,
+      description: `User submission: ${text.substring(0, 30)}`,
+      imageUrl: imageDataUri,
+      imageHint: "user submission",
+      uploadedBy: session.id,
+    });
+    await newImage.save();
+
     const newPromptData: Partial<Prompt> = {
       id: `p-${uuidv4()}`,
       text,
       categoryId,
-      imageId: `img_prompt_${Date.now()}`,
+      imageId: imageId,
       status: session.role === 'admin' ? 'approved' : 'pending',
       submittedBy: session.id,
     };
-
-    // In a real app, you'd handle the file upload here.
-    console.log('Image received:', image.name, image.size);
     
     const newPrompt = new PromptModel(newPromptData);
     await newPrompt.save();
-
-    console.log('New prompt submitted:', newPrompt);
 
     revalidatePath('/');
     revalidatePath('/admin');
@@ -218,7 +230,15 @@ export async function deletePrompt(promptId: string) {
     throw new Error('Unauthorized');
   }
   
-  await PromptModel.deleteOne({ id: promptId });
+  const prompt = await PromptModel.findOne({ id: promptId });
+  if (prompt) {
+    // Also delete the associated user-uploaded image
+    const image = await PlaceholderImageModel.findOne({ id: prompt.imageId });
+    if (image && image.uploadedBy) {
+        await PlaceholderImageModel.deleteOne({ id: prompt.imageId });
+    }
+    await PromptModel.deleteOne({ id: promptId });
+  }
 
   revalidatePath('/admin');
   revalidatePath('/');
@@ -309,3 +329,5 @@ export async function deleteCategory(categoryId: string) {
         console.error("Failed to delete category:", error);
     }
 }
+
+    
