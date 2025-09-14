@@ -6,6 +6,7 @@ import {Heart, Copy} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import * as Lucide from 'lucide-react';
 import {useEffect, useState} from 'react';
+import Link from 'next/link';
 
 type PromptCardProps = {
   prompt: FullPrompt;
@@ -27,7 +28,7 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
   }, []);
 
   return (
-    <div className="group relative aspect-[3/4] overflow-hidden rounded-lg">
+    <Link href={`/prompt/${prompt.id}`} className="group relative aspect-[3/4] overflow-hidden rounded-lg">
       <Image
         src={prompt.imageUrl}
         alt={prompt.text}
@@ -48,8 +49,11 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
           <Button
             variant="ghost"
             size="icon"
-            className="group/heart rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
-            onClick={() => onToggleFavorite(prompt.id)}
+            className="group/heart z-10 rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleFavorite(prompt.id)
+            }}
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart
@@ -72,6 +76,6 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
