@@ -2,7 +2,7 @@ import Image from 'next/image';
 import type {FullPrompt} from '@/lib/definitions';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
-import {Heart} from 'lucide-react';
+import {Heart, Copy} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import * as Lucide from 'lucide-react';
 
@@ -15,6 +15,10 @@ type PromptCardProps = {
 export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardProps) {
   const CategoryIcon = Lucide[prompt.category.icon] as Lucide.LucideIcon;
 
+  // Placeholder counts
+  const favoritesCount = Math.floor(Math.random() * 2000) + 100;
+  const copiesCount = Math.floor(Math.random() * 5000) + 200;
+
   return (
     <div className="group relative aspect-[3/4] overflow-hidden rounded-lg">
       <Image
@@ -25,7 +29,7 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
         data-ai-hint={prompt.imageHint}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 flex flex-col p-4 text-white">
+      <div className="absolute inset-0 flex flex-col justify-between p-4 text-white">
         <div className="flex items-center justify-between">
           <Badge
             variant="secondary"
@@ -49,7 +53,17 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
             />
           </Button>
         </div>
-        <p className="mt-4 text-sm font-medium">{prompt.text}</p>
+
+        <div className="flex w-full items-center justify-end gap-4 text-sm font-medium">
+          <div className="flex items-center gap-1.5">
+            <Heart className="h-4 w-4" />
+            <span>{(favoritesCount / 1000).toFixed(1)}k</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Copy className="h-4 w-4" />
+            <span>{(copiesCount / 1000).toFixed(1)}k</span>
+          </div>
+        </div>
       </div>
     </div>
   );
