@@ -1,6 +1,5 @@
 import {cookies} from 'next/headers';
 import {users, type User} from '@/lib/data';
-import {NextResponse} from 'next/server';
 
 const SESSION_COOKIE_NAME = 'session';
 
@@ -44,7 +43,7 @@ export async function signUp(name: string, email: string, password_input: string
     name,
     email,
     password: password_input,
-    role: 'user', // Default role for new users
+    role: users.length === 0 ? 'admin' : 'user', // First user is admin
   };
   users.push(newUser);
 
