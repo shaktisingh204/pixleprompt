@@ -74,11 +74,13 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
               }
             />
           </div>
-          <CategoryFilters
-            categories={categoryCounts}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-          />
+          <div className="my-4">
+            <CategoryFilters
+              categories={categoryCounts}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+            />
+          </div>
           <TabsContent value="all">
             {filteredPrompts.length > 0 ? (
               <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
