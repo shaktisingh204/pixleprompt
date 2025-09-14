@@ -27,7 +27,7 @@ async function getCategories(): Promise<Category[]> {
 async function getPrompts(): Promise<Prompt[]> {
   try {
     await dbConnect();
-    const prompts = await PromptModel.find().lean().exec();
+    const prompts = await PromptModel.find().sort({ createdAt: -1 }).lean().exec();
     return prompts as Prompt[];
   } catch (error) {
     console.error('Failed to fetch prompts:', error);
@@ -36,3 +36,4 @@ async function getPrompts(): Promise<Prompt[]> {
 }
 
 export {getUsers, getCategories, getPrompts};
+

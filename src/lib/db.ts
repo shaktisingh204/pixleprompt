@@ -57,7 +57,7 @@ const PromptSchema = new Schema<Prompt>({
   imageId: { type: String, required: true },
   status: { type: String, enum: ['pending', 'approved'], required: true, default: 'pending' },
   submittedBy: { type: String, ref: 'User' },
-});
+}, { timestamps: true });
 
 const PlaceholderImageSchema = new Schema<ImagePlaceholder>({
     id: { type: String, required: true, unique: true },
