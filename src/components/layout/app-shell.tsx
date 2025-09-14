@@ -37,7 +37,11 @@ export function AppShell({children}: {children: React.ReactNode}) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    getSession().then(setUser);
+    const fetchSession = async () => {
+      const session = await getSession();
+      setUser(session);
+    };
+    fetchSession();
   }, []);
 
   const menuItems = [
