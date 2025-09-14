@@ -11,7 +11,9 @@ export default async function Home() {
   const imageMap = new Map(PlaceHolderImages.map(img => [img.id, img]));
   const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
 
-  const fullPrompts: FullPrompt[] = prompts.map(prompt => {
+  const approvedPrompts = prompts.filter(p => p.status === 'approved');
+
+  const fullPrompts: FullPrompt[] = approvedPrompts.map(prompt => {
     const category = categoryMap.get(prompt.categoryId);
     const image = imageMap.get(prompt.imageId);
     return {

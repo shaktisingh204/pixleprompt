@@ -9,6 +9,7 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {Textarea} from '@/components/ui/textarea';
 import {Label} from '@/components/ui/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {Input} from '@/components/ui/input';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {AlertCircle, CheckCircle} from 'lucide-react';
 import {useToast} from '@/hooks/use-toast';
@@ -28,6 +29,7 @@ export function SubmitPromptForm({categories}: SubmitPromptFormProps) {
         description: state.message,
         variant: 'default',
       });
+      // Consider resetting the form here if needed
     } else if (state?.errors?.server) {
       toast({
         title: 'Error',
@@ -79,14 +81,25 @@ export function SubmitPromptForm({categories}: SubmitPromptFormProps) {
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="image">Inspiration Image</Label>
+            <Input id="image" name="image" type="file" required accept="image/*" />
+            {state?.errors?.image && (
+              <p className="text-sm text-destructive">{state.errors.image.join(', ')}</p>
+            )}
+          </div>
+
           {state?.success && !state.errors && (
-             <Alert variant="default" className="bg-green-500/10 border-green-500/50 text-green-700 dark:text-green-400 [&>svg]:text-green-700 dark:[&>svg]:text-green-400">
-             <CheckCircle className="h-4 w-4" />
-             <AlertTitle>Prompt Submitted!</AlertTitle>
-             <AlertDescription>
-               Thank you for your contribution. Your prompt is now pending review.
-             </AlertDescription>
-           </Alert>
+            <Alert
+              variant="default"
+              className="bg-green-500/10 border-green-500/50 text-green-700 dark:text-green-400 [&>svg]:text-green-700 dark:[&>svg]:text-green-400"
+            >
+              <CheckCircle className="h-4 w-4" />
+              <AlertTitle>Prompt Submitted!</AlertTitle>
+              <AlertDescription>
+                Thank you for your contribution. Your prompt is now pending review.
+              </AlertDescription>
+            </Alert>
           )}
 
           {state?.errors?.server && (

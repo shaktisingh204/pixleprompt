@@ -4,10 +4,10 @@
 import {z} from 'zod';
 import {redirect} from 'next/navigation';
 import {revalidatePath} from 'next/cache';
-import {signIn, signOut, signUp} from '@/lib/auth';
+import {getSession, signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import {prompts} from '@/lib/data';
+import {prompts, users} from '@/lib/data';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -123,12 +123,14 @@ export async function getPromptSuggestions(
 const submitPromptSchema = z.object({
   text: z.string().min(10, 'Prompt must be at least 10 characters.'),
   categoryId: z.string().min(1, 'Please select a category.'),
+  image: z.instanceof(File).refine(file => file.size > 0, 'Image is required.'),
 });
 
 export type SubmitPromptState = {
   errors?: {
     text?: string[];
     categoryId?: string[];
+    image?: string[];
     server?: string[];
   };
   message?: string | null;
@@ -140,6 +142,11 @@ export async function submitPrompt(
   formData: FormData
 ): Promise<SubmitPromptState> {
   try {
+    const session = await getSession();
+    if (!session) {
+      throw new Error('You must be logged in to submit a prompt.');
+    }
+
     const validatedFields = submitPromptSchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
@@ -149,25 +156,56 @@ export async function submitPrompt(
       };
     }
 
-    const {text, categoryId} = validatedFields.data;
+    const {text, categoryId, image} = validatedFields.data;
 
-    // This is where you would typically save to a database.
-    // For now, we'll add it to our mock data array.
     const newPrompt = {
       id: `p-${Date.now()}`,
       text,
       categoryId,
-      imageId: `img_prompt_${Date.now()}`, // needs a corresponding placeholder image
+      imageId: `img_prompt_${Date.now()}`,
+      status: 'pending' as const,
+      submittedBy: session.id,
     };
+
+    // In a real app, you'd handle the file upload here.
+    console.log('Image received:', image.name, image.size);
+
     prompts.push(newPrompt);
-    console.log('New prompt submitted:', newPrompt);
-    console.log('Total prompts:', prompts.length);
+    console.log('New prompt submitted for review:', newPrompt);
+
     revalidatePath('/');
-    return {success: true, message: 'Prompt submitted successfully!'};
+    revalidatePath('/admin');
+    return {success: true, message: 'Prompt submitted successfully for review!'};
   } catch (error) {
     if (error instanceof Error) {
       return {errors: {server: [error.message]}};
     }
     return {errors: {server: ['Something went wrong.']}};
+  }
+}
+
+export async function approvePrompt(promptId: string) {
+  const session = await getSession();
+  if (session?.role !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+  const prompt = prompts.find(p => p.id === promptId);
+  if (prompt) {
+    prompt.status = 'approved';
+    revalidatePath('/admin');
+    revalidatePath('/');
+  }
+}
+
+export async function rejectPrompt(promptId: string) {
+  const session = await getSession();
+  if (session?.role !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+  const index = prompts.findIndex(p => p.id === promptId);
+  if (index > -1) {
+    prompts.splice(index, 1);
+    revalidatePath('/admin');
+    revalidatePath('/');
   }
 }

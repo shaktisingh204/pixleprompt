@@ -44,6 +44,7 @@ export async function signUp(name: string, email: string, password_input: string
     name,
     email,
     password: password_input,
+    role: 'user', // Default role for new users
   };
   users.push(newUser);
 
