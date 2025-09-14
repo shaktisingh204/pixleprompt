@@ -13,6 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
   SidebarInset,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import {Logo} from '@/components/logo';
 import {Button} from '@/components/ui/button';
@@ -24,16 +25,60 @@ import {
   Mail,
   PlusCircle,
   LayoutGrid,
+  PanelLeft,
 } from 'lucide-react';
 import {usePathname} from 'next/navigation';
 import {useEffect, useState} from 'react';
 import {UserNav} from '@/components/auth/user-nav';
 import {cn} from '@/lib/utils';
 import {useIsMobile} from '@/hooks/use-mobile';
+import {Header} from '@/components/layout/header';
+
+function MainContent({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: User | null;
+}) {
+  const {isMobile} = useSidebar();
+  return (
+    <div className="flex flex-col w-full">
+       <Header user={user} />
+      <main className="flex-1 overflow-y-auto">{children}</main>
+      {isMobile && (
+         <div className="fixed bottom-0 left-0 z-50 w-full h-16 border-t bg-background">
+         <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
+           <Link
+             href="/"
+             className={cn(
+               'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
+                usePathname() === '/' ? 'text-primary' : 'text-muted-foreground'
+             )}
+           >
+             <LayoutGrid className="w-5 h-5 mb-1" />
+             <span className="text-sm">Browse</span>
+           </Link>
+           <Link
+             href="/submit-prompt"
+             className={cn(
+               'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
+               usePathname() === '/submit-prompt' ? 'text-primary' : 'text-muted-foreground'
+             )}
+           >
+             <PlusCircle className="w-5 h-5 mb-1" />
+             <span className="text-sm">Submit</span>
+           </Link>
+         </div>
+       </div>
+      )}
+    </div>
+  );
+}
+
 
 export function AppShell({children}: {children: React.ReactNode}) {
   const pathname = usePathname();
-  const isMobile = useIsMobile();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -51,53 +96,9 @@ export function AppShell({children}: {children: React.ReactNode}) {
     {href: '/contact', label: 'Contact', icon: Mail},
   ];
 
-  if (isMobile) {
-    return (
-      <div className="flex min-h-screen w-full flex-col">
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-           <Logo />
-            <div className="flex flex-1 items-center justify-end space-x-4">
-            {user ? (
-                <UserNav user={user} />
-            ) : (
-                <Button asChild>
-                <Link href="/login">Login</Link>
-                </Button>
-            )}
-            </div>
-        </header>
-        <main className="flex-1 pb-20">{children}</main>
-        <div className="fixed bottom-0 left-0 z-50 w-full h-16 border-t bg-background">
-          <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
-            <Link
-              href="/"
-              className={cn(
-                'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
-                pathname === '/' ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              <LayoutGrid className="w-5 h-5 mb-1" />
-              <span className="text-sm">Browse</span>
-            </Link>
-            <Link
-              href="/submit-prompt"
-              className={cn(
-                'inline-flex flex-col items-center justify-center px-5 hover:bg-muted',
-                pathname === '/submit-prompt' ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              <PlusCircle className="w-5 h-5 mb-1" />
-              <span className="text-sm">Submit</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar collapsible="icon" variant="sidebar">
         <SidebarHeader>
           <Logo />
         </SidebarHeader>
@@ -120,7 +121,9 @@ export function AppShell({children}: {children: React.ReactNode}) {
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset>
+         <MainContent user={user}>{children}</MainContent>
+      </SidebarInset>
     </SidebarProvider>
   );
 }
