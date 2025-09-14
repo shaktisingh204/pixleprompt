@@ -1,5 +1,5 @@
 import {getSession} from '@/lib/auth';
-import {categories} from '@/lib/data';
+import {getCategories} from '@/lib/data';
 import {Header} from '@/components/layout/header';
 import {SubmitPromptForm} from '@/components/prompts/submit-prompt-form';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import {ChevronLeft} from 'lucide-react';
 
 export default async function SubmitPromptPage() {
   const user = await getSession();
+  const categories = await getCategories();
 
   return (
     <div className="flex min-h-screen w-full flex-col">

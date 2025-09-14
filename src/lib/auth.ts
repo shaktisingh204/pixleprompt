@@ -2,26 +2,29 @@
 'use server';
 
 import {cookies} from 'next/headers';
-import {users, type User} from '@/lib/data';
+import type {User} from '@/lib/definitions';
+import pool from '@/lib/db';
+import {RowDataPacket} from 'mysql2';
+import { v4 as uuidv4 } from 'uuid';
 
 const SESSION_COOKIE_NAME = 'session';
 
-// This is a simplified session management for demonstration purposes.
-// In a production app, use a robust solution like NextAuth.js or a dedicated auth service.
 
 export async function getSession(): Promise<User | null> {
   const sessionCookie = cookies().get(SESSION_COOKIE_NAME)?.value;
   if (!sessionCookie) return null;
 
-  const user = users.find(u => u.email === sessionCookie);
-  return user || null;
+  const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, email, role FROM users WHERE email = ?', [sessionCookie]);
+  const user = rows[0];
+
+  return (user as User) || null;
 }
 
 export async function signIn(email: string, password_input: string): Promise<void> {
-  const user = users.find(u => u.email === email);
+  const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [email]);
+  const user = rows[0];
 
   if (!user || user.password !== password_input) {
-    // In a real app, you'd use a more secure password comparison (e.g., bcrypt.compare)
     throw new Error('CredentialsSignin');
   }
 
@@ -34,23 +37,25 @@ export async function signIn(email: string, password_input: string): Promise<voi
 }
 
 export async function signUp(name: string, email: string, password_input: string): Promise<void> {
-  const existingUser = users.find(u => u.email === email);
-  if (existingUser) {
-    throw new Error('An account with this email already exists.');
-  }
+    const [existingUsers] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
+        throw new Error('An account with this email already exists.');
+    }
 
-  // This is for demonstration only. In a real app, you would hash the password
-  // and save the new user to a database.
-  const newUser: User = {
-    id: `user-${users.length + 1}`,
-    name,
-    email,
-    password: password_input,
-    role: users.length === 0 ? 'admin' : 'user', // First user is admin
-  };
-  users.push(newUser);
+    const [allUsers] = await pool.query<RowDataPacket[]>('SELECT * FROM users');
+    const role = allUsers.length === 0 ? 'admin' : 'user';
 
-  await signIn(email, password_input);
+    const newUser: User = {
+        id: `user-${uuidv4()}`,
+        name,
+        email,
+        password: password_input, // In a real app, hash this password
+        role,
+    };
+
+    await pool.query('INSERT INTO users SET ?', newUser);
+
+    await signIn(email, password_input);
 }
 
 export async function signOut(): Promise<void> {

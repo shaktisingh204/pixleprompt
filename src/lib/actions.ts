@@ -7,7 +7,10 @@ import {revalidatePath} from 'next/cache';
 import {getSession, signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import {prompts, users} from '@/lib/data';
+import pool from '@/lib/db';
+import { v4 as uuidv4 } from 'uuid';
+import type {Prompt} from '@/lib/definitions';
+
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -158,8 +161,8 @@ export async function submitPrompt(
 
     const {text, categoryId, image} = validatedFields.data;
 
-    const newPrompt = {
-      id: `p-${Date.now()}`,
+    const newPrompt: Prompt = {
+      id: `p-${uuidv4()}`,
       text,
       categoryId,
       imageId: `img_prompt_${Date.now()}`,
@@ -170,7 +173,7 @@ export async function submitPrompt(
     // In a real app, you'd handle the file upload here.
     console.log('Image received:', image.name, image.size);
 
-    prompts.push(newPrompt);
+    await pool.query('INSERT INTO prompts SET ?', newPrompt);
     console.log('New prompt submitted for review:', newPrompt);
 
     revalidatePath('/');
@@ -189,12 +192,11 @@ export async function approvePrompt(promptId: string) {
   if (session?.role !== 'admin') {
     throw new Error('Unauthorized');
   }
-  const prompt = prompts.find(p => p.id === promptId);
-  if (prompt) {
-    prompt.status = 'approved';
-    revalidatePath('/admin');
-    revalidatePath('/');
-  }
+
+  await pool.query('UPDATE prompts SET status = ? WHERE id = ?', ['approved', promptId]);
+  
+  revalidatePath('/admin');
+  revalidatePath('/');
 }
 
 export async function rejectPrompt(promptId: string) {
@@ -202,10 +204,10 @@ export async function rejectPrompt(promptId: string) {
   if (session?.role !== 'admin') {
     throw new Error('Unauthorized');
   }
-  const index = prompts.findIndex(p => p.id === promptId);
-  if (index > -1) {
-    prompts.splice(index, 1);
-    revalidatePath('/admin');
-    revalidatePath('/');
-  }
+  
+  await pool.query('DELETE FROM prompts WHERE id = ?', [promptId]);
+
+  revalidatePath('/admin');
+  revalidatePath('/');
 }
+

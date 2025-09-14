@@ -1,7 +1,7 @@
 import {notFound} from 'next/navigation';
-import {prompts, categories, users} from '@/lib/data';
+import {getPrompts, getCategories, getUsers} from '@/lib/data';
 import {PlaceHolderImages} from '@/lib/placeholder-images';
-import type {FullPrompt} from '@/lib/definitions';
+import type {FullPrompt, Prompt, Category, User} from '@/lib/definitions';
 import {Header} from '@/components/layout/header';
 import {getSession} from '@/lib/auth';
 import Image from 'next/image';
@@ -15,15 +15,21 @@ import {Separator} from '@/components/ui/separator';
 
 export default async function PromptPage({params}: {params: {id: string}}) {
   const session = await getSession();
+  
+  const [allPrompts, allCategories, allUsers] = await Promise.all([
+    getPrompts(),
+    getCategories(),
+    getUsers(),
+  ]);
 
-  const prompt = prompts.find(p => p.id === params.id);
+  const prompt = allPrompts.find((p: Prompt) => p.id === params.id);
   if (!prompt) {
     notFound();
   }
 
-  const category = categories.find(c => c.id === prompt.categoryId);
+  const category = allCategories.find((c: Category) => c.id === prompt.categoryId);
   const image = PlaceHolderImages.find(i => i.id === prompt.imageId);
-  const submitter = prompt.submittedBy ? users.find(u => u.id === prompt.submittedBy) : null;
+  const submitter = prompt.submittedBy ? allUsers.find((u: User) => u.id === prompt.submittedBy) : null;
 
   const CategoryIcon = category ? (Lucide[category.icon] as Lucide.LucideIcon) : Lucide.AlertCircle;
 
@@ -35,11 +41,11 @@ export default async function PromptPage({params}: {params: {id: string}}) {
     submittedBy: submitter ? {name: submitter.name} : undefined,
   };
 
-  const relatedPrompts: FullPrompt[] = prompts
+  const relatedPrompts: FullPrompt[] = allPrompts
     .filter(p => p.categoryId === fullPrompt.categoryId && p.id !== fullPrompt.id)
     .slice(0, 3) // Get up to 3 related prompts
     .map(p => {
-      const pCategory = categories.find(c => c.id === p.categoryId);
+      const pCategory = allCategories.find(c => c.id === p.categoryId);
       const pImage = PlaceHolderImages.find(i => i.id === p.imageId);
       return {
         ...p,

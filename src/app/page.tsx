@@ -1,5 +1,5 @@
 import {getSession} from '@/lib/auth';
-import {prompts, categories} from '@/lib/data';
+import {getPrompts, getCategories} from '@/lib/data';
 import {PlaceHolderImages} from '@/lib/placeholder-images';
 import type {FullPrompt} from '@/lib/definitions';
 import {Header} from '@/components/layout/header';
@@ -7,6 +7,8 @@ import {PromptDashboard} from '@/components/prompts/prompt-dashboard';
 
 export default async function Home() {
   const user = await getSession();
+
+  const [prompts, categories] = await Promise.all([getPrompts(), getCategories()]);
 
   const imageMap = new Map(PlaceHolderImages.map(img => [img.id, img]));
   const categoryMap = new Map(categories.map(cat => [cat.id, cat]));

@@ -1,11 +1,17 @@
 import {getSession} from '@/lib/auth';
-import {prompts, categories, users} from '@/lib/data';
+import {getPrompts, getCategories, getUsers} from '@/lib/data';
 import {Header} from '@/components/layout/header';
 import {AdminDashboard} from '@/components/admin/admin-dashboard';
 import type {FullPrompt} from '@/lib/definitions';
 
 export default async function AdminPage() {
   const user = await getSession();
+
+  const [prompts, categories, users] = await Promise.all([
+    getPrompts(),
+    getCategories(),
+    getUsers(),
+  ]);
 
   const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
   const userMap = new Map(users.map(u => [u.id, u]));

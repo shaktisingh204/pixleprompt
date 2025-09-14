@@ -1,4 +1,5 @@
 import type {LucideIcon} from 'lucide-react';
+import { RowDataPacket } from 'mysql2';
 
 export type User = {
   id: string;
@@ -28,3 +29,7 @@ export type FullPrompt = Prompt & {
   imageUrl: string;
   imageHint: string;
 };
+
+export interface UserRow extends User, RowDataPacket {}
+export interface CategoryRow extends Category, RowDataPacket {}
+export interface PromptRow extends Prompt, RowDataPacket {}
