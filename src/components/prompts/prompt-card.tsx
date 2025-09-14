@@ -29,10 +29,7 @@ export function PromptCard({prompt, isFavorite, onToggleFavorite}: PromptCardPro
           />
         </div>
       </CardHeader>
-      <CardContent className="p-4">
-        <p className="font-body text-base text-foreground">{prompt.text}</p>
-      </CardContent>
-      <CardFooter className="flex justify-between p-4 pt-0">
+      <CardFooter className="flex justify-between p-4">
         <Badge variant="secondary" className="flex items-center gap-1.5">
           {CategoryIcon && <CategoryIcon className="h-3.5 w-3.5" />}
           {prompt.category.name}
