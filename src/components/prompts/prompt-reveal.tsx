@@ -49,16 +49,16 @@ export function PromptReveal({promptText}: PromptRevealProps) {
   }, [isGenerating, progress]);
 
   const handleGenerateClick = () => {
-    setShowAd(true);
-  };
-
-  const handleAdWatched = () => {
-    setShowAd(false);
     setIsGenerating(true);
     setProgress(0);
-  }
+  };
 
   const handleCopyClick = () => {
+    setShowAd(true);
+  };
+  
+  const handleAdWatchedAndCopy = () => {
+    setShowAd(false);
     navigator.clipboard.writeText(promptText);
     toast({
       title: 'Copied to clipboard!',
@@ -72,14 +72,14 @@ export function PromptReveal({promptText}: PromptRevealProps) {
                 <AlertDialogHeader>
                 <AlertDialogTitle>Watch an Ad to Continue</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This is a simulation of a rewarded ad. Watch the "ad" to reveal the prompt.
+                    This is a simulation of a rewarded ad. Watch the "ad" to copy the prompt.
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="flex items-center justify-center w-full h-48 bg-muted border border-dashed rounded-lg my-4">
                     <span className="text-muted-foreground text-sm">Rewarded Ad Simulation</span>
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogAction onClick={handleAdWatched}>"Ad" Watched</AlertDialogAction>
+                    <AlertDialogAction onClick={handleAdWatchedAndCopy}>"Ad" Watched & Copy</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
