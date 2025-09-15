@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useState, useMemo} from 'react';
@@ -58,7 +59,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
     <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
       <div className="flex flex-col gap-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center justify-between">
             <TabsList>
               <TabsTrigger value="all">All Prompts</TabsTrigger>
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
@@ -75,7 +76,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
           </ScrollArea>
           <TabsContent value="all">
             {filteredPrompts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {filteredPrompts.map(prompt => (
                   <PromptCard
                     key={prompt.id}
@@ -99,7 +100,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
           </TabsContent>
           <TabsContent value="favorites">
             {filteredPrompts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {filteredPrompts.map(prompt => (
                   <PromptCard
                     key={prompt.id}
