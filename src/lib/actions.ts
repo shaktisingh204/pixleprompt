@@ -7,7 +7,7 @@ import {revalidatePath} from 'next/cache';
 import {getSession, signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import {Prompt, PromptModel, CategoryModel, Category, PlaceholderImageModel} from '@/lib/db';
+import {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -330,4 +330,46 @@ export async function deleteCategory(categoryId: string) {
     }
 }
 
+const adCodeSchema = z.object({
+    code: z.string(),
+});
+
+export type AdCodeState = {
+    errors?: {
+        code?: string[];
+        server?: string[];
+    };
+    message?: string;
+    success?: boolean;
+}
+
+export async function updateAdCode(adId: string, prevState: AdCodeState | undefined, formData: FormData): Promise<AdCodeState> {
+    const session = await getSession();
+    if (session?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const validatedFields = adCodeSchema.safeParse(Object.fromEntries(formData.entries()));
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+        };
+    }
     
+    try {
+        await AdCodeModel.findOneAndUpdate({ id: adId }, { code: validatedFields.data.code });
+        revalidatePath('/admin');
+        return { success: true, message: 'Ad code updated successfully.' };
+    } catch (error) {
+        return { errors: { server: ['Failed to update ad code.'] } };
+    }
+}
+
+export async function getAdCodesForClient(): Promise<Record<string, string>> {
+    const adCodes = await AdCodeModel.find().lean().exec() as AdCode[];
+    const codeMap: Record<string, string> = {};
+    for (const ad of adCodes) {
+      codeMap[ad.id] = ad.code;
+    }
+    return codeMap;
+}

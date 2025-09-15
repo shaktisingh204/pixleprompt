@@ -1,5 +1,5 @@
 import mongoose, { Schema, model, models } from 'mongoose';
-import type { User, Category, Prompt } from '@/lib/definitions';
+import type { User, Category, Prompt, AdCode } from '@/lib/definitions';
 import { ImagePlaceholder } from './placeholder-images';
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -67,12 +67,20 @@ const PlaceholderImageSchema = new Schema<ImagePlaceholder>({
     uploadedBy: { type: String, ref: 'User', required: false },
 });
 
+const AdCodeSchema = new Schema<AdCode>({
+    id: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+    code: { type: String, default: '<div class="flex items-center justify-center w-full h-full bg-muted border border-dashed rounded-lg"><span class="text-muted-foreground text-sm">Ad Placement</span></div>' },
+    type: { type: String, enum: ['banner', 'interstitial', 'rewarded'], required: true },
+});
+
 export const UserModel = models.User || model<User>('User', UserSchema);
 export const CategoryModel = models.Category || model<Category>('Category', CategorySchema);
 export const PromptModel = models.Prompt || model<Prompt>('Prompt', PromptSchema);
 export const PlaceholderImageModel = models.PlaceholderImage || model<ImagePlaceholder>('PlaceholderImage', PlaceholderImageSchema);
+export const AdCodeModel = models.AdCode || model<AdCode>('AdCode', AdCodeSchema);
 
-export { User, Category, Prompt, ImagePlaceholder };
+export { User, Category, Prompt, ImagePlaceholder, AdCode };
 
 
 async function seedData() {
@@ -81,6 +89,16 @@ async function seedData() {
         if (!uncategorizedCategory) {
             await CategoryModel.create({ id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'});
         }
+
+        const adCodeCount = await AdCodeModel.countDocuments();
+        if(adCodeCount === 0) {
+            const defaultAdCode = '<div class="flex items-center justify-center w-full h-full bg-muted border border-dashed rounded-lg my-4"><span class="text-muted-foreground text-sm">Ad Placement</span></div>';
+            await AdCodeModel.insertMany([
+                { id: 'banner-main', name: 'Main Banner', type: 'banner', code: defaultAdCode.replace('my-4', '') },
+                { id: 'rewarded-main', name: 'Main Rewarded Ad', type: 'rewarded', code: defaultAdCode },
+                { id: 'interstitial-main', name: 'Main Interstitial Ad', type: 'interstitial', code: defaultAdCode },
+            ]);
+        }
     } catch (error) {
         console.error("Error seeding essential data:", error);
     }
@@ -88,5 +106,3 @@ async function seedData() {
 
 
 export default dbConnect;
-
-    

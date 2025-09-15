@@ -16,6 +16,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
   } from "@/components/ui/alert-dialog"
+import { getAdCodesForClient } from '@/lib/actions';
 
 type PromptRevealProps = {
   promptText: string;
@@ -29,7 +30,20 @@ export function PromptReveal({promptText}: PromptRevealProps) {
   const [isRevealed, setIsRevealed] = useState(false);
   const [showRewardedAd, setShowRewardedAd] = useState(false);
   const [showInterstitialAd, setShowInterstitialAd] = useState(false);
+  const [adCodes, setAdCodes] = useState<Record<string, string>>({});
   const {toast} = useToast();
+
+  useEffect(() => {
+    async function fetchAdCodes() {
+        try {
+            const codes = await getAdCodesForClient();
+            setAdCodes(codes);
+        } catch (error) {
+            console.error("Failed to fetch ad codes", error);
+        }
+    }
+    fetchAdCodes();
+  }, [])
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -82,9 +96,7 @@ export function PromptReveal({promptText}: PromptRevealProps) {
                     This is a simulation of a rewarded ad. Watch the "ad" to generate your prompt.
                 </AlertDialogDescription>
                 </AlertDialogHeader>
-                <div className="flex items-center justify-center w-full h-48 bg-muted border border-dashed rounded-lg my-4">
-                    <span className="text-muted-foreground text-sm">Rewarded Ad Simulation</span>
-                </div>
+                <div dangerouslySetInnerHTML={{ __html: adCodes['rewarded-main'] || '' }} />
                 <AlertDialogFooter>
                     <AlertDialogAction onClick={handleAdWatchedAndGenerate}>"Ad" Watched & Generate</AlertDialogAction>
                 </AlertDialogFooter>
@@ -99,9 +111,7 @@ export function PromptReveal({promptText}: PromptRevealProps) {
                     This is a simulation of an interstitial ad. Close this to continue.
                 </AlertDialogDescription>
                 </AlertDialogHeader>
-                <div className="flex items-center justify-center w-full h-48 bg-muted border border-dashed rounded-lg my-4">
-                    <span className="text-muted-foreground text-sm">Interstitial Ad Simulation</span>
-                </div>
+                <div dangerouslySetInnerHTML={{ __html: adCodes['interstitial-main'] || '' }} />
                 <AlertDialogFooter>
                     <AlertDialogAction onClick={handleAdWatchedAndCopy}>"Ad" Watched & Copy</AlertDialogAction>
                 </AlertDialogFooter>
@@ -136,4 +146,3 @@ export function PromptReveal({promptText}: PromptRevealProps) {
     </>
   );
 }
-

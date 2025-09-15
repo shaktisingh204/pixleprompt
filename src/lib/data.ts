@@ -1,6 +1,6 @@
 
-import type {Prompt, Category, User} from '@/lib/definitions';
-import dbConnect, { UserModel, CategoryModel, PromptModel } from '@/lib/db';
+import type {Prompt, Category, User, AdCode} from '@/lib/definitions';
+import dbConnect, { UserModel, CategoryModel, PromptModel, AdCodeModel } from '@/lib/db';
 
 async function getUsers(): Promise<User[]> {
   try {
@@ -35,5 +35,15 @@ async function getPrompts(): Promise<Prompt[]> {
   }
 }
 
-export {getUsers, getCategories, getPrompts};
+async function getAdCodes(): Promise<AdCode[]> {
+    try {
+      await dbConnect();
+      const adCodes = await AdCodeModel.find().lean().exec();
+      return adCodes as AdCode[];
+    } catch (error) {
+      console.error('Failed to fetch ad codes:', error);
+      return [];
+    }
+  }
 
+export {getUsers, getCategories, getPrompts, getAdCodes};
