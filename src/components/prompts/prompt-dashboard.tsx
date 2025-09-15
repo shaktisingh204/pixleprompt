@@ -76,7 +76,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
           </ScrollArea>
           <TabsContent value="all">
             {filteredPrompts.length > 0 ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
                 {filteredPrompts.map(prompt => (
                   <PromptCard
                     key={prompt.id}
@@ -100,7 +100,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
           </TabsContent>
           <TabsContent value="favorites">
             {filteredPrompts.length > 0 ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
                 {filteredPrompts.map(prompt => (
                   <PromptCard
                     key={prompt.id}
