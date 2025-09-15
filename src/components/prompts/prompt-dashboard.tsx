@@ -60,7 +60,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
     const items: (FullPrompt | 'ad')[] = [];
     for (let i = 0; i < filteredPrompts.length; i++) {
       items.push(filteredPrompts[i]);
-      if ((i + 1) % 6 === 0) {
+      if ((i + 1) % 3 === 0) {
         items.push('ad');
       }
     }
