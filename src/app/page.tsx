@@ -3,6 +3,7 @@ import {getPrompts, getCategories} from '@/lib/data';
 import {getPlaceholderImages} from '@/lib/placeholder-images';
 import type {FullPrompt} from '@/lib/definitions';
 import {PromptDashboard} from '@/components/prompts/prompt-dashboard';
+import { AdBanner } from '@/components/ad-banner';
 
 export default async function Home() {
   const user = await getSession();
@@ -37,6 +38,9 @@ export default async function Home() {
           <p className="text-muted-foreground">
             Browse, filter, and find your next spark of inspiration.
           </p>
+        </div>
+        <div className="mx-auto w-full max-w-6xl">
+            <AdBanner />
         </div>
         <PromptDashboard
           initialPrompts={fullPrompts}

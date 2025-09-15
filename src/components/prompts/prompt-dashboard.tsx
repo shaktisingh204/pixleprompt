@@ -7,6 +7,7 @@ import {CategoryFilters} from './category-filters';
 import {PromptCard} from './prompt-card';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AdBanner } from '../ad-banner';
 
 type PromptDashboardProps = {
   initialPrompts: FullPrompt[];
@@ -55,6 +56,18 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
     return prompts;
   }, [initialPrompts, selectedCategory, favoritePromptIds, activeTab]);
 
+  const promptsWithAds = useMemo(() => {
+    const items = [];
+    for (let i = 0; i < filteredPrompts.length; i++) {
+      items.push(filteredPrompts[i]);
+      if ((i + 1) % 8 === 0) {
+        items.push('ad');
+      }
+    }
+    return items;
+  }, [filteredPrompts]);
+
+
   return (
     <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
       <div className="flex flex-col gap-4">
@@ -75,17 +88,23 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
             </div>
           </ScrollArea>
           <TabsContent value="all">
-            {filteredPrompts.length > 0 ? (
+            {promptsWithAds.length > 0 ? (
               <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-                {filteredPrompts.map(prompt => (
-                  <PromptCard
-                    key={prompt.id}
-                    prompt={prompt}
-                    isFavorite={favoritePromptIds.has(prompt.id)}
-                    onToggleFavorite={toggleFavorite}
-                    isUserLoggedIn={!!user}
-                  />
-                ))}
+                {promptsWithAds.map((item, index) => {
+                  if(item === 'ad') {
+                    return <AdBanner key={`ad-${index}`} className="h-full col-span-1" />
+                  }
+                  const prompt = item as FullPrompt;
+                  return (
+                    <PromptCard
+                      key={prompt.id}
+                      prompt={prompt}
+                      isFavorite={favoritePromptIds.has(prompt.id)}
+                      onToggleFavorite={toggleFavorite}
+                      isUserLoggedIn={!!user}
+                    />
+                  )
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">

@@ -6,6 +6,15 @@ import {Progress} from '@/components/ui/progress';
 import {Card, CardContent} from '@/components/ui/card';
 import {Copy} from 'lucide-react';
 import {useToast} from '@/hooks/use-toast';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+  } from "@/components/ui/alert-dialog"
 
 type PromptRevealProps = {
   promptText: string;
@@ -17,6 +26,7 @@ export function PromptReveal({promptText}: PromptRevealProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
+  const [showAd, setShowAd] = useState(false);
   const {toast} = useToast();
 
   useEffect(() => {
@@ -39,9 +49,14 @@ export function PromptReveal({promptText}: PromptRevealProps) {
   }, [isGenerating, progress]);
 
   const handleGenerateClick = () => {
+    setShowAd(true);
+  };
+
+  const handleAdWatched = () => {
+    setShowAd(false);
     setIsGenerating(true);
     setProgress(0);
-  };
+  }
 
   const handleCopyClick = () => {
     navigator.clipboard.writeText(promptText);
@@ -50,37 +65,50 @@ export function PromptReveal({promptText}: PromptRevealProps) {
     });
   };
 
-  if (isRevealed) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex justify-between items-start gap-4">
-            <p className="text-lg font-mono flex-1">{promptText}</p>
-            <Button variant="secondary" size="sm" onClick={handleCopyClick}>
-              <Copy className="mr-2 h-4 w-4" />
-              Copy
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isGenerating) {
-    return (
-      <div className="space-y-4 text-center">
-        <p>Generating your prompt...</p>
-        <Progress value={progress} />
-        <p className="text-sm text-muted-foreground">
-          {Math.round(COUNTDOWN_SECONDS - (progress / 100) * COUNTDOWN_SECONDS)}s remaining
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <Button size="lg" className="w-full" onClick={handleGenerateClick}>
-      Generate Prompt
-    </Button>
+    <>
+        <AlertDialog open={showAd} onOpenChange={setShowAd}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Watch an Ad to Continue</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This is a simulation of a rewarded ad. Watch the "ad" to reveal the prompt.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="flex items-center justify-center w-full h-48 bg-muted border border-dashed rounded-lg my-4">
+                    <span className="text-muted-foreground text-sm">Rewarded Ad Simulation</span>
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogAction onClick={handleAdWatched}>"Ad" Watched</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        {isRevealed ? (
+            <Card>
+            <CardContent className="p-6">
+                <div className="flex justify-between items-start gap-4">
+                <p className="text-lg font-mono flex-1">{promptText}</p>
+                <Button variant="secondary" size="sm" onClick={handleCopyClick}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy
+                </Button>
+                </div>
+            </CardContent>
+            </Card>
+        ) : isGenerating ? (
+            <div className="space-y-4 text-center">
+            <p>Generating your prompt...</p>
+            <Progress value={progress} />
+            <p className="text-sm text-muted-foreground">
+                {Math.round(COUNTDOWN_SECONDS - (progress / 100) * COUNTDOWN_SECONDS)}s remaining
+            </p>
+            </div>
+        ) : (
+            <Button size="lg" className="w-full" onClick={handleGenerateClick}>
+            Generate Prompt
+            </Button>
+        )}
+    </>
   );
 }

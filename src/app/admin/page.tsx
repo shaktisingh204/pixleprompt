@@ -5,6 +5,7 @@ import { getPlaceholderImages } from '@/lib/placeholder-images';
 import { CategoryManager } from '@/components/admin/category-manager';
 import { PromptManager } from '@/components/admin/prompt-manager';
 import { Separator } from '@/components/ui/separator';
+import { AdBanner } from '@/components/ad-banner';
 
 export default async function AdminPage() {
   const [prompts, categories, users, placeholderImages] = await Promise.all([
@@ -44,7 +45,9 @@ export default async function AdminPage() {
 
         <AdminDashboard prompts={pendingPrompts} />
 
-        <Separator className="my-8" />
+        <div className='mx-auto w-full max-w-6xl'>
+            <AdBanner />
+        </div>
         
         <CategoryManager categories={categories} />
 

@@ -4,6 +4,7 @@ import {SubmitPromptForm} from '@/components/prompts/submit-prompt-form';
 import Link from 'next/link';
 import {Button} from '@/components/ui/button';
 import {ChevronLeft} from 'lucide-react';
+import { AdBanner } from '@/components/ad-banner';
 
 export default async function SubmitPromptPage() {
   const user = await getSession();
@@ -29,6 +30,7 @@ export default async function SubmitPromptPage() {
             </p>
           </div>
           <SubmitPromptForm categories={categories} />
+          <AdBanner />
         </div>
       </main>
     </div>

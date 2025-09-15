@@ -11,6 +11,7 @@ import {Button} from '@/components/ui/button';
 import Link from 'next/link';
 import {ChevronLeft} from 'lucide-react';
 import {Separator} from '@/components/ui/separator';
+import { AdBanner } from '@/components/ad-banner';
 
 export default async function PromptPage({params}: {params: {id: string}}) {
   const session = await getSession();
@@ -100,6 +101,9 @@ export default async function PromptPage({params}: {params: {id: string}}) {
               <PromptReveal promptText={fullPrompt.text} />
             </div>
           </div>
+
+          <AdBanner className="my-12" />
+
           {relatedPrompts.length > 0 && (
             <div className="mt-16">
               <Separator className="my-8" />
@@ -127,6 +131,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
               </div>
             </div>
           )}
+           <AdBanner className="mt-12" />
         </div>
       </main>
     </div>

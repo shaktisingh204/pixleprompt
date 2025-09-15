@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import {Logo} from '@/components/logo';
+import { AdBanner } from '../ad-banner';
 
 export function Footer() {
   const footerLinks = [
@@ -11,6 +12,7 @@ export function Footer() {
   return (
     <footer className="hidden md:block mt-auto border-t bg-background">
       <div className="container mx-auto px-6 py-8">
+        <AdBanner />
         <div className="flex flex-col items-center justify-between sm:flex-row">
           <Logo />
           <p className="mt-4 text-sm text-muted-foreground sm:mt-0">
