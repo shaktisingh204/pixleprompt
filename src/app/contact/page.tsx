@@ -35,7 +35,7 @@ export default function ContactPage() {
             </div>
             <Button type="submit" className="w-full" size="lg">Send Message</Button>
         </form>
-        <AdBanner />
+        <AdBanner adId="banner-contact-page" />
       </div>
     </div>
   );

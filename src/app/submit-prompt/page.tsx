@@ -30,7 +30,7 @@ export default async function SubmitPromptPage() {
             </p>
           </div>
           <SubmitPromptForm categories={categories} />
-          <AdBanner />
+          <AdBanner adId="banner-submit-page" />
         </div>
       </main>
     </div>

@@ -85,12 +85,12 @@ export function PromptReveal({promptText}: PromptRevealProps) {
         <AlertDialog open={showRewardedAd} onOpenChange={setShowRewardedAd}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                <AlertDialogTitle>Watch a Rewarded Ad</AlertDialogTitle>
+                <AlertDialogTitle>Watch a Rewarded Ad to Generate</AlertDialogTitle>
                 <AlertDialogDescription>
                     This is a simulation of a rewarded ad. Watch the "ad" to generate your prompt.
                 </AlertDialogDescription>
                 </AlertDialogHeader>
-                <div dangerouslySetInnerHTML={{ __html: adCodes['rewarded-main'] || '' }} />
+                <div dangerouslySetInnerHTML={{ __html: adCodes['rewarded-generate-prompt'] || '' }} />
                 <AlertDialogFooter>
                     <AlertDialogAction onClick={handleAdWatchedAndGenerate}>"Ad" Watched & Generate</AlertDialogAction>
                 </AlertDialogFooter>

@@ -34,5 +34,5 @@ export interface AdCode extends Document {
   id: string;
   name: string;
   code: string;
-  type: 'banner' | 'interstitial' | 'rewarded';
+  type: 'banner' | 'interstitial' | 'rewarded' | 'native';
 }

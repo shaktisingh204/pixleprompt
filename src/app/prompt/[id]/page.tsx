@@ -102,7 +102,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
             </div>
           </div>
 
-          <AdBanner className="my-12" />
+          <AdBanner adId="banner-prompt-detail-top" className="my-12" />
 
           {relatedPrompts.length > 0 && (
             <div className="mt-16">
@@ -131,7 +131,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
               </div>
             </div>
           )}
-           <AdBanner className="mt-12" />
+           <AdBanner adId="banner-prompt-detail-bottom" className="mt-12" />
         </div>
       </main>
     </div>

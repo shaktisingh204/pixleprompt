@@ -40,7 +40,7 @@ export default async function Home() {
           </p>
         </div>
         <div className="mx-auto w-full max-w-6xl">
-            <AdBanner />
+            <AdBanner adId="banner-homepage-top" />
         </div>
         <PromptDashboard
           initialPrompts={fullPrompts}

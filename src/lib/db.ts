@@ -71,7 +71,7 @@ const AdCodeSchema = new Schema<AdCode>({
     id: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     code: { type: String, default: '<div class="flex items-center justify-center w-full h-full bg-muted border border-dashed rounded-lg"><span class="text-muted-foreground text-sm">Ad Placement</span></div>' },
-    type: { type: String, enum: ['banner', 'interstitial', 'rewarded'], required: true },
+    type: { type: String, enum: ['banner', 'interstitial', 'rewarded', 'native'], required: true },
 });
 
 export const UserModel = models.User || model<User>('User', UserSchema);
@@ -94,9 +94,14 @@ async function seedData() {
         if(adCodeCount === 0) {
             const defaultAdCode = '<div class="flex items-center justify-center w-full h-full bg-muted border border-dashed rounded-lg my-4"><span class="text-muted-foreground text-sm">Ad Placement</span></div>';
             await AdCodeModel.insertMany([
-                { id: 'banner-main', name: 'Main Banner', type: 'banner', code: defaultAdCode.replace('my-4', '') },
-                { id: 'rewarded-main', name: 'Main Rewarded Ad', type: 'rewarded', code: defaultAdCode },
-                { id: 'interstitial-main', name: 'Main Interstitial Ad', type: 'interstitial', code: defaultAdCode },
+                { id: 'banner-homepage-top', name: 'Homepage Top Banner', type: 'banner', code: defaultAdCode.replace('my-4', '') },
+                { id: 'native-prompt-grid', name: 'Prompt Grid Native Ad', type: 'native', code: defaultAdCode.replace('my-4', 'h-full') },
+                { id: 'banner-prompt-detail-top', name: 'Prompt Detail Page (Top)', type: 'banner', code: defaultAdCode },
+                { id: 'banner-prompt-detail-bottom', name: 'Prompt Detail Page (Bottom)', type: 'banner', code: defaultAdCode },
+                { id: 'banner-contact-page', name: 'Contact Page Banner', type: 'banner', code: defaultAdCode },
+                { id: 'banner-submit-page', name: 'Submit Prompt Page Banner', type: 'banner', code: defaultAdCode },
+                { id: 'banner-footer', name: 'Footer Banner', type: 'banner', code: defaultAdCode },
+                { id: 'rewarded-generate-prompt', name: 'Rewarded Ad (Generate Prompt)', type: 'rewarded', code: defaultAdCode },
             ]);
         }
     } catch (error) {
