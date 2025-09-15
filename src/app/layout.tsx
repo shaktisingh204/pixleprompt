@@ -1,8 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
-import {GeistSans} from 'geist/font/sans';
-import {GeistMono} from 'geist/font/mono';
 import {AppShell} from '@/components/layout/app-shell';
 
 export const metadata: Metadata = {
@@ -18,7 +16,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable} dark`}
+      className="dark"
       suppressHydrationWarning
     >
       <body className="font-body antialiased">

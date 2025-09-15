@@ -10,9 +10,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['var(--font-geist-sans)'],
-        headline: ['var(--font-geist-sans)'],
-        code: ['var(--font-geist-mono)'],
+        body: ['sans-serif'],
+        headline: ['sans-serif'],
+        code: ['monospace'],
       },
       fontWeight: {
         bold: '700',
