@@ -23,7 +23,7 @@ export function AdManager({ adCodes }: AdManagerProps) {
         <CardHeader>
             <CardTitle>Manage Ad Codes</CardTitle>
             <CardDescription>
-              Update the ad snippets for various placements across the site.
+              Update the ad snippets for various placements across the site. You can paste the full HTML/script code from your ad provider here.
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -55,7 +55,7 @@ function AdCodeAccordionItem({ adCode }: { adCode: AdCode }) {
 
     return (
         <AccordionItem value={adCode.id}>
-            <AccordionTrigger className='font-medium'>{adCode.name} <span className='ml-2 text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded'>{adCode.type}</span></AccordionTrigger>
+            <AccordionTrigger className='font-medium'>{adCode.name}</AccordionTrigger>
             <AccordionContent>
                 <form ref={formRef} action={dispatch} className="space-y-4">
                     <div className="space-y-2">
@@ -66,6 +66,7 @@ function AdCodeAccordionItem({ adCode }: { adCode: AdCode }) {
                             defaultValue={adCode.code} 
                             rows={8}
                             className="font-mono text-xs"
+                            placeholder="Paste your ad code snippet here..."
                         />
                         {state.errors?.code && <p className="text-sm text-destructive">{state.errors.code.join(', ')}</p>}
                     </div>

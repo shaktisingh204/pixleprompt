@@ -41,7 +41,7 @@ export default async function AdminPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="mx-auto grid w-full max-w-6xl gap-2">
           <h1 className="font-headline text-3xl font-semibold">Admin Panel</h1>
-          <p className="text-muted-foreground">Manage prompts, categories, and ads.</p>
+          <p className="text-muted-foreground">Manage prompts, categories, and ad codes.</p>
         </div>
 
         <AdminDashboard prompts={pendingPrompts} />
