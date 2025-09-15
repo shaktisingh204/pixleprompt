@@ -54,11 +54,11 @@ export function PromptReveal({promptText}: PromptRevealProps) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="flex justify-between items-start">
-            <p className="text-lg font-mono">{promptText}</p>
-            <Button variant="ghost" size="icon" onClick={handleCopyClick}>
-              <Copy className="h-5 w-5" />
-              <span className="sr-only">Copy prompt</span>
+          <div className="flex justify-between items-start gap-4">
+            <p className="text-lg font-mono flex-1">{promptText}</p>
+            <Button variant="secondary" size="sm" onClick={handleCopyClick}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy
             </Button>
           </div>
         </CardContent>
