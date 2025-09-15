@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useState, useEffect} from 'react';
@@ -26,7 +27,8 @@ export function PromptReveal({promptText}: PromptRevealProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
-  const [showAd, setShowAd] = useState(false);
+  const [showRewardedAd, setShowRewardedAd] = useState(false);
+  const [showInterstitialAd, setShowInterstitialAd] = useState(false);
   const {toast} = useToast();
 
   useEffect(() => {
@@ -49,16 +51,21 @@ export function PromptReveal({promptText}: PromptRevealProps) {
   }, [isGenerating, progress]);
 
   const handleGenerateClick = () => {
+    setShowRewardedAd(true);
+  };
+  
+  const handleAdWatchedAndGenerate = () => {
+    setShowRewardedAd(false);
     setIsGenerating(true);
     setProgress(0);
   };
 
   const handleCopyClick = () => {
-    setShowAd(true);
+    setShowInterstitialAd(true);
   };
   
   const handleAdWatchedAndCopy = () => {
-    setShowAd(false);
+    setShowInterstitialAd(false);
     navigator.clipboard.writeText(promptText);
     toast({
       title: 'Copied to clipboard!',
@@ -67,16 +74,33 @@ export function PromptReveal({promptText}: PromptRevealProps) {
 
   return (
     <>
-        <AlertDialog open={showAd} onOpenChange={setShowAd}>
+        <AlertDialog open={showRewardedAd} onOpenChange={setShowRewardedAd}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                <AlertDialogTitle>Watch an Ad to Continue</AlertDialogTitle>
+                <AlertDialogTitle>Watch a Rewarded Ad</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This is a simulation of a rewarded ad. Watch the "ad" to copy the prompt.
+                    This is a simulation of a rewarded ad. Watch the "ad" to generate your prompt.
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="flex items-center justify-center w-full h-48 bg-muted border border-dashed rounded-lg my-4">
                     <span className="text-muted-foreground text-sm">Rewarded Ad Simulation</span>
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogAction onClick={handleAdWatchedAndGenerate}>"Ad" Watched & Generate</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={showInterstitialAd} onOpenChange={setShowInterstitialAd}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Interstitial Ad</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This is a simulation of an interstitial ad. Close this to continue.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="flex items-center justify-center w-full h-48 bg-muted border border-dashed rounded-lg my-4">
+                    <span className="text-muted-foreground text-sm">Interstitial Ad Simulation</span>
                 </div>
                 <AlertDialogFooter>
                     <AlertDialogAction onClick={handleAdWatchedAndCopy}>"Ad" Watched & Copy</AlertDialogAction>
@@ -112,3 +136,4 @@ export function PromptReveal({promptText}: PromptRevealProps) {
     </>
   );
 }
+
