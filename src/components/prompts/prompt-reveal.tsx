@@ -29,7 +29,6 @@ export function PromptReveal({promptText}: PromptRevealProps) {
   const [progress, setProgress] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [showRewardedAd, setShowRewardedAd] = useState(false);
-  const [showInterstitialAd, setShowInterstitialAd] = useState(false);
   const [adCodes, setAdCodes] = useState<Record<string, string>>({});
   const {toast} = useToast();
 
@@ -75,11 +74,6 @@ export function PromptReveal({promptText}: PromptRevealProps) {
   };
 
   const handleCopyClick = () => {
-    setShowInterstitialAd(true);
-  };
-  
-  const handleAdWatchedAndCopy = () => {
-    setShowInterstitialAd(false);
     navigator.clipboard.writeText(promptText);
     toast({
       title: 'Copied to clipboard!',
@@ -99,21 +93,6 @@ export function PromptReveal({promptText}: PromptRevealProps) {
                 <div dangerouslySetInnerHTML={{ __html: adCodes['rewarded-main'] || '' }} />
                 <AlertDialogFooter>
                     <AlertDialogAction onClick={handleAdWatchedAndGenerate}>"Ad" Watched & Generate</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-
-        <AlertDialog open={showInterstitialAd} onOpenChange={setShowInterstitialAd}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Interstitial Ad</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This is a simulation of an interstitial ad. Close this to continue.
-                </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div dangerouslySetInnerHTML={{ __html: adCodes['interstitial-main'] || '' }} />
-                <AlertDialogFooter>
-                    <AlertDialogAction onClick={handleAdWatchedAndCopy}>"Ad" Watched & Copy</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
