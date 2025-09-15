@@ -57,10 +57,10 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
   }, [initialPrompts, selectedCategory, favoritePromptIds, activeTab]);
 
   const promptsWithAds = useMemo(() => {
-    const items = [];
+    const items: (FullPrompt | 'ad')[] = [];
     for (let i = 0; i < filteredPrompts.length; i++) {
       items.push(filteredPrompts[i]);
-      if ((i + 1) % 8 === 0) {
+      if ((i + 1) % 6 === 0) {
         items.push('ad');
       }
     }
@@ -92,7 +92,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
               <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
                 {promptsWithAds.map((item, index) => {
                   if(item === 'ad') {
-                    return <AdBanner key={`ad-${index}`} className="h-full col-span-1" />
+                    return <AdBanner key={`ad-${index}`} className="aspect-[3/4] h-auto my-0" />
                   }
                   const prompt = item as FullPrompt;
                   return (
