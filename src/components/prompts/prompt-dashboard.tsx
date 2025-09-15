@@ -5,6 +5,7 @@ import type {FullPrompt, Category, User} from '@/lib/definitions';
 import {CategoryFilters} from './category-filters';
 import {PromptCard} from './prompt-card';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type PromptDashboardProps = {
   initialPrompts: FullPrompt[];
@@ -63,13 +64,15 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
             </TabsList>
           </div>
-          <div className="my-4">
-            <CategoryFilters
-              categories={categoryCounts}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-            />
-          </div>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="my-4">
+                <CategoryFilters
+                categories={categoryCounts}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
+                />
+            </div>
+          </ScrollArea>
           <TabsContent value="all">
             {filteredPrompts.length > 0 ? (
               <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
