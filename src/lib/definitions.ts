@@ -1,3 +1,4 @@
+
 import type {LucideIcon} from 'lucide-react';
 import type { Document } from 'mongoose';
 
@@ -7,6 +8,7 @@ export interface User extends Document {
   email: string;
   password?: string; // Should not be sent to client
   role: 'admin' | 'user';
+  favoritePrompts?: string[];
 };
 
 export interface Category extends Document {
@@ -22,6 +24,8 @@ export interface Prompt extends Document {
   imageId: string;
   status: 'pending' | 'approved';
   submittedBy?: string;
+  favoritesCount: number;
+  copiesCount: number;
 };
 
 export type FullPrompt = Prompt & {

@@ -105,7 +105,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
                 )}
               </div>
 
-              <PromptReveal promptText={fullPrompt.text} />
+              <PromptReveal promptText={fullPrompt.text} promptId={fullPrompt.id} />
             </div>
           </div>
 

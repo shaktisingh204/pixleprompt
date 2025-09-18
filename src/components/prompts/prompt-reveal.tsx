@@ -16,15 +16,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
   } from "@/components/ui/alert-dialog"
-import { getAdCodesForClient } from '@/lib/actions';
+import { getAdCodesForClient, incrementCopyCount } from '@/lib/actions';
 
 type PromptRevealProps = {
   promptText: string;
+  promptId: string;
 };
 
 const COUNTDOWN_SECONDS = 5;
 
-export function PromptReveal({promptText}: PromptRevealProps) {
+export function PromptReveal({promptText, promptId}: PromptRevealProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -75,6 +76,7 @@ export function PromptReveal({promptText}: PromptRevealProps) {
 
   const handleCopyClick = () => {
     navigator.clipboard.writeText(promptText);
+    incrementCopyCount(promptId);
     toast({
       title: 'Copied to clipboard!',
     });

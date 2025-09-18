@@ -1,3 +1,4 @@
+
 import mongoose, { Schema, model, models } from 'mongoose';
 import type { User, Category, Prompt, AdCode } from '@/lib/definitions';
 import { ImagePlaceholder } from './placeholder-images';
@@ -42,6 +43,7 @@ const UserSchema = new Schema<User>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'user'], required: true, default: 'user' },
+  favoritePrompts: { type: [String], default: [] },
 });
 
 const CategorySchema = new Schema<Category>({
@@ -57,6 +59,8 @@ const PromptSchema = new Schema<Prompt>({
   imageId: { type: String, required: true },
   status: { type: String, enum: ['pending', 'approved'], required: true, default: 'pending' },
   submittedBy: { type: String, ref: 'User' },
+  favoritesCount: { type: Number, default: 0 },
+  copiesCount: { type: Number, default: 0 },
 }, { timestamps: true });
 
 const PlaceholderImageSchema = new Schema<ImagePlaceholder>({
@@ -68,7 +72,7 @@ const PlaceholderImageSchema = new Schema<ImagePlaceholder>({
 });
 
 const AdCodeSchema = new Schema<AdCode>({
-    id: { type: String, required: true, unique: true },
+    id: { type: String, required: true, unique:true },
     name: { type: String, required: true },
     code: { type: String, default: '<div class="flex items-center justify-center w-full h-full bg-muted border border-dashed rounded-lg"><span class="text-muted-foreground text-sm">Ad Placement</span></div>' },
     type: { type: String, enum: ['banner', 'interstitial', 'rewarded', 'native'], required: true },
@@ -80,7 +84,7 @@ export const PromptModel = models.Prompt || model<Prompt>('Prompt', PromptSchema
 export const PlaceholderImageModel = models.PlaceholderImage || model<ImagePlaceholder>('PlaceholderImage', PlaceholderImageSchema);
 export const AdCodeModel = models.AdCode || model<AdCode>('AdCode', AdCodeSchema);
 
-export { User, Category, Prompt, ImagePlaceholder, AdCode };
+export type { User, Category, Prompt, ImagePlaceholder, AdCode };
 
 
 async function seedData() {

@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import type {FullPrompt} from '@/lib/definitions';
 import {Badge} from '@/components/ui/badge';
@@ -5,14 +6,14 @@ import {Button} from '@/components/ui/button';
 import {Heart, Copy} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import * as Lucide from 'lucide-react';
-import {useEffect, useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
+import {useTransition} from 'react';
 
 type PromptCardProps = {
   prompt: FullPrompt;
   isFavorite: boolean;
-  onToggleFavorite: (promptId: string) => void;
+  onToggleFavorite: (promptId: string) => Promise<void>;
   isUserLoggedIn: boolean;
 };
 
@@ -24,24 +25,24 @@ export function PromptCard({
 }: PromptCardProps) {
   const CategoryIcon = Lucide[prompt.category.icon] as Lucide.LucideIcon;
   const router = useRouter();
-
-  const [counts, setCounts] = useState({favorites: 0, copies: 0});
-
-  useEffect(() => {
-    // Generate random counts only on the client-side to avoid hydration errors
-    setCounts({
-      favorites: Math.floor(Math.random() * 2000) + 100,
-      copies: Math.floor(Math.random() * 5000) + 200,
-    });
-  }, []);
+  const [isPending, startTransition] = useTransition();
 
   const handleFavoriteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (isUserLoggedIn) {
-      onToggleFavorite(prompt.id);
-    } else {
+    if (!isUserLoggedIn) {
       router.push('/login');
+      return;
     }
+    startTransition(async () => {
+      await onToggleFavorite(prompt.id);
+    });
+  };
+
+  const formatCount = (count: number) => {
+    if (count >= 1000) {
+      return (count / 1000).toFixed(1) + 'k';
+    }
+    return count;
   };
 
   return (
@@ -68,6 +69,7 @@ export function PromptCard({
             size="icon"
             className="group/heart z-10 rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
             onClick={handleFavoriteClick}
+            disabled={isPending}
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart
@@ -82,11 +84,11 @@ export function PromptCard({
         <div className="flex w-full items-center justify-end gap-4 text-sm font-medium">
           <div className="flex items-center gap-1.5">
             <Heart className="h-4 w-4" />
-            <span>{(counts.favorites / 1000).toFixed(1)}k</span>
+            <span>{formatCount(prompt.favoritesCount)}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Copy className="h-4 w-4" />
-            <span>{(counts.copies / 1000).toFixed(1)}k</span>
+            <span>{formatCount(prompt.copiesCount)}</span>
           </div>
         </div>
       </div>

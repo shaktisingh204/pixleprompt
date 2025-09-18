@@ -1,12 +1,13 @@
 
 'use client';
 
-import {useState, useMemo} from 'react';
+import {useState, useMemo, useEffect} from 'react';
 import type {FullPrompt, Category, User} from '@/lib/definitions';
 import {CategoryFilters} from './category-filters';
 import {PromptCard} from './prompt-card';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import { AdBanner } from '../ad-banner';
+import { toggleFavoritePrompt } from '@/lib/actions';
 
 type PromptDashboardProps = {
   initialPrompts: FullPrompt[];
@@ -17,18 +18,23 @@ type PromptDashboardProps = {
 export function PromptDashboard({initialPrompts, allCategories, user}: PromptDashboardProps) {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [favoritePromptIds, setFavoritePromptIds] = useState<Set<string>>(new Set());
+  const [favoritePromptIds, setFavoritePromptIds] = useState<Set<string>>(new Set(user?.favoritePrompts || []));
 
-  const toggleFavorite = (promptId: string) => {
+  useEffect(() => {
+    setFavoritePromptIds(new Set(user?.favoritePrompts || []));
+  }, [user]);
+
+  const handleToggleFavorite = async (promptId: string) => {
     setFavoritePromptIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(promptId)) {
-        newSet.delete(promptId);
-      } else {
-        newSet.add(promptId);
-      }
-      return newSet;
+        const newSet = new Set(prev);
+        if (newSet.has(promptId)) {
+            newSet.delete(promptId);
+        } else {
+            newSet.add(promptId);
+        }
+        return newSet;
     });
+    await toggleFavoritePrompt(promptId);
   };
 
   const categoryCounts = useMemo(() => {
@@ -68,12 +74,12 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
 
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center justify-between">
             <TabsList>
                 <TabsTrigger value="all">All Prompts</TabsTrigger>
-                <TabsTrigger value="favorites">Favorites</TabsTrigger>
+                <TabsTrigger value="favorites" disabled={!user}>Favorites</TabsTrigger>
             </TabsList>
         </div>
       
@@ -98,7 +104,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
                     key={prompt.id}
                     prompt={prompt}
                     isFavorite={favoritePromptIds.has(prompt.id)}
-                    onToggleFavorite={toggleFavorite}
+                    onToggleFavorite={handleToggleFavorite}
                     isUserLoggedIn={!!user}
                   />
                 )
@@ -110,7 +116,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
                 No prompts found
               </h3>
               <p className="text-sm text-muted-foreground">
-                Try adjusting your filters or adding some prompts to your favorites.
+                Try adjusting your filters.
               </p>
             </div>
           )}
@@ -123,7 +129,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
                   key={prompt.id}
                   prompt={prompt}
                   isFavorite={favoritePromptIds.has(prompt.id)}
-                  onToggleFavorite={toggleFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                   isUserLoggedIn={!!user}
                 />
               ))}
@@ -131,10 +137,10 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
           ) : (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
               <h3 className="font-headline text-xl font-medium tracking-tight">
-                No prompts found
+                No favorites yet
               </h3>
               <p className="text-sm text-muted-foreground">
-                Try adding some prompts to your favorites.
+                Click the heart on a prompt to add it to your favorites.
               </p>
             </div>
           )}

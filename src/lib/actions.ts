@@ -7,7 +7,7 @@ import {revalidatePath} from 'next/cache';
 import {getSession, signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel} from '@/lib/db';
+import {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel, UserModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -145,8 +145,8 @@ export async function submitPrompt(
 ): Promise<SubmitPromptState> {
   try {
     const session = await getSession();
-    if (!session) {
-      throw new Error('You must be logged in to submit a prompt.');
+    if (!session || session.role !== 'admin') {
+      throw new Error('You must be an administrator to submit a prompt.');
     }
 
     const validatedFields = submitPromptSchema.safeParse(Object.fromEntries(formData.entries()));
@@ -182,7 +182,7 @@ export async function submitPrompt(
       text,
       categoryId,
       imageId: imageId,
-      status: session.role === 'admin' ? 'approved' : 'pending',
+      status: 'approved',
       submittedBy: session.id,
     };
     
@@ -201,8 +201,8 @@ export async function submitPrompt(
               body: JSON.stringify({
                   app_id: "c3c64ad1-60bb-47b5-a35f-440438172e0d",
                   included_segments: ['Subscribed Users'],
-                  headings: { en: 'New Prompt Submitted! 🚀' },
-                  contents: { en: `A new creative prompt is ready for review: "${newPrompt.text.substring(0, 50)}..."` },
+                  headings: { en: 'New Prompt Added! ✨' },
+                  contents: { en: `A new creative prompt is ready: "${newPrompt.text.substring(0, 50)}..."` },
                   web_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/prompt/${newPrompt.id}`
               }),
           });
@@ -211,10 +211,7 @@ export async function submitPrompt(
       }
     }
 
-    if (newPromptData.status === 'approved') {
-        revalidatePath('/');
-    }
-
+    revalidatePath('/');
     revalidatePath('/admin');
     return {success: true, message: 'Prompt submitted successfully!'};
   } catch (error) {
@@ -397,4 +394,41 @@ export async function getAdCodesForClient(): Promise<Record<string, string>> {
       codeMap[ad.id] = ad.code;
     }
     return codeMap;
+}
+
+export async function toggleFavoritePrompt(promptId: string) {
+  const session = await getSession();
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
+
+  const user = await UserModel.findOne({ id: session.id });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const isFavorite = user.favoritePrompts?.includes(promptId);
+  let updateCount;
+
+  if (isFavorite) {
+    user.favoritePrompts = user.favoritePrompts?.filter(id => id !== promptId);
+    updateCount = -1;
+  } else {
+    user.favoritePrompts?.push(promptId);
+    updateCount = 1;
+  }
+
+  await user.save();
+  await PromptModel.updateOne({ id: promptId }, { $inc: { favoritesCount: updateCount } });
+
+  revalidatePath('/');
+  revalidatePath(`/prompt/${promptId}`);
+  
+  // Return the new favorite status
+  return !isFavorite;
+}
+
+export async function incrementCopyCount(promptId: string) {
+    await PromptModel.updateOne({ id: promptId }, { $inc: { copiesCount: 1 } });
+    revalidatePath(`/prompt/${promptId}`);
 }
