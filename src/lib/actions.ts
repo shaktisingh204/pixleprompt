@@ -189,6 +189,30 @@ export async function submitPrompt(
     const newPrompt = new PromptModel(newPromptData);
     await newPrompt.save();
 
+    // Send OneSignal notification
+    if (newPromptData.status === 'approved' && process.env.ONESIGNAL_REST_API_KEY) {
+        try {
+            await fetch('https://onesignal.com/api/v1/notifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`,
+                },
+                body: JSON.stringify({
+                    app_id: "c3c64ad1-60bb-47b5-a35f-440438172e0d",
+                    included_segments: ['Subscribed Users'],
+                    headings: { en: 'New Prompt Added! ✨' },
+                    contents: { en: `A new creative prompt has been added: "${text.substring(0, 50)}..."` },
+                    web_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/prompt/${newPromptData.id}`
+                }),
+            });
+        } catch (notificationError) {
+            console.error('OneSignal notification failed:', notificationError);
+            // Don't fail the whole request if notification fails
+        }
+    }
+
+
     revalidatePath('/');
     revalidatePath('/admin');
     return {success: true, message: 'Prompt submitted successfully!'};
