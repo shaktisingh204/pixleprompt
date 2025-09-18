@@ -78,7 +78,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
             </TabsList>
           </div>
           
-          <div className="my-4">
+          <div className="w-full overflow-x-auto py-4">
             <CategoryFilters
               categories={categoryCounts}
               selectedCategory={selectedCategory}

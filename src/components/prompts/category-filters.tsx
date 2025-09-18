@@ -5,13 +5,6 @@ import type {Category} from '@/lib/definitions';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
 import * as Lucide from 'lucide-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
 
 type CategoryFiltersProps = {
   categories: (Category & {promptCount: number})[];
@@ -41,39 +34,28 @@ export function CategoryFilters({
   const allItems = [{id: null, name: 'All', promptCount: totalPrompts, icon: 'LayoutGrid' as const}, ...categories];
 
   return (
-    <Carousel
-      opts={{
-        align: 'start',
-        dragFree: true,
-      }}
-      className="w-full"
-    >
-      <CarouselContent>
-        {allItems.map(item => {
-          const isActive = selectedCategory === item.id;
-          const isAllButton = item.id === null;
-          return (
-            <CarouselItem key={item.id || 'all'} className="basis-auto">
-              <Button
-                variant="ghost"
-                onClick={() => onSelectCategory(item.id)}
-                className={cn(
-                  'group h-auto py-2 px-4',
-                  isActive ? 'bg-primary/10 text-primary' : ''
-                )}
-              >
-                {!isAllButton && getIcon(item.icon, isActive)}
-                {item.name}
-                <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                  {item.promptCount}
-                </span>
-              </Button>
-            </CarouselItem>
-          );
-        })}
-      </CarouselContent>
-      <CarouselPrevious className="hidden md:flex" />
-      <CarouselNext className="hidden md:flex" />
-    </Carousel>
+    <div className="flex space-x-2 whitespace-nowrap">
+      {allItems.map(item => {
+        const isActive = selectedCategory === item.id;
+        const isAllButton = item.id === null;
+        return (
+            <Button
+              key={item.id || 'all'}
+              variant="ghost"
+              onClick={() => onSelectCategory(item.id)}
+              className={cn(
+                'group h-auto py-2 px-4',
+                isActive ? 'bg-primary/10 text-primary' : ''
+              )}
+            >
+              {!isAllButton && getIcon(item.icon, isActive)}
+              {item.name}
+              <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                {item.promptCount}
+              </span>
+            </Button>
+        );
+      })}
+    </div>
   );
 }
