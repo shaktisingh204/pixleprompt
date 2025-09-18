@@ -34,7 +34,6 @@ export function CategoryFilters({
   };
 
   const allItems = [{id: null, name: 'All', promptCount: totalPrompts, icon: 'LayoutGrid' as const}, ...categories];
-  const isMobile = useIsMobile();
 
   return (
     <div className="whitespace-nowrap">

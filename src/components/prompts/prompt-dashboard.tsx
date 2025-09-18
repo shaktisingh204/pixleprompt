@@ -68,27 +68,23 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
 
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <div className="mx-auto w-full max-w-6xl">
+    <div className="mx-auto w-full max-w-6xl">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center justify-between">
             <TabsList>
                 <TabsTrigger value="all">All Prompts</TabsTrigger>
                 <TabsTrigger value="favorites">Favorites</TabsTrigger>
             </TabsList>
         </div>
-      </div>
       
-      <div className="w-full overflow-x-auto py-4">
-        <div className="mx-auto w-full max-w-6xl">
-            <CategoryFilters
-                categories={categoryCounts}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-            />
+        <div className="w-full overflow-x-auto py-4 no-scrollbar">
+          <CategoryFilters
+              categories={categoryCounts}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+          />
         </div>
-      </div>
 
-      <div className="mx-auto w-full max-w-6xl">
         <TabsContent value="all">
           {promptsWithAds.length > 0 ? (
             <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
@@ -143,7 +139,7 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
             </div>
           )}
         </TabsContent>
-      </div>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 }
