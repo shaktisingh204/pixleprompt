@@ -15,7 +15,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  // If user has a session and tries to access admin login, redirect to admin dashboard
+  // If user has a session and tries to access admin login, we can redirect to admin dashboard
+  // Note: We can't check role here, so this is a basic redirect. Role check is handled in AppShell.
   if (sessionCookie && pathname === '/admin/login') {
     return NextResponse.redirect(new URL('/admin', request.url));
   }
