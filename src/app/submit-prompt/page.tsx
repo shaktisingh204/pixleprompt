@@ -6,9 +6,14 @@ import Link from 'next/link';
 import {Button} from '@/components/ui/button';
 import {ChevronLeft} from 'lucide-react';
 import { AdBanner } from '@/components/ad-banner';
+import { redirect } from 'next/navigation';
 
 export default async function SubmitPromptPage() {
   const user = await getSession();
+  if (!user || user.role !== 'admin') {
+    redirect('/admin/login');
+  }
+
   const categories = await getCategories();
 
   return (

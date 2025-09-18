@@ -2,7 +2,6 @@
 'use client';
 
 import {useFormState, useFormStatus} from 'react-dom';
-import Link from 'next/link';
 import {authenticate} from '@/lib/actions';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
@@ -41,12 +40,6 @@ export function LoginForm() {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <LoginButton />
-          <div className="text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="underline">
-              Sign up
-            </Link>
-          </div>
         </CardFooter>
       </Card>
     </form>

@@ -2,7 +2,7 @@
 'use client';
 
 import {useState, useMemo, useEffect} from 'react';
-import type {FullPrompt, Category, User} from '@/lib/definitions';
+import type {FullPrompt, Category} from '@/lib/definitions';
 import {CategoryFilters} from './category-filters';
 import {PromptCard} from './prompt-card';
 import { AdBanner } from '../ad-banner';
@@ -12,10 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 type PromptDashboardProps = {
   initialPrompts: FullPrompt[];
   allCategories: Category[];
-  user: User | null;
 };
 
-export function PromptDashboard({initialPrompts, allCategories, user}: PromptDashboardProps) {
+export function PromptDashboard({initialPrompts, allCategories}: PromptDashboardProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [optimisticFavorites, setOptimisticFavorites] = useState<Record<string, {isFavorite: boolean, count: number}>>({});
   const { toast } = useToast();

@@ -65,7 +65,7 @@ function MainContent({
       {isMobile && (
         <>
           <div className="fixed bottom-0 left-0 z-50 w-full h-16 border-t bg-background">
-            <div className="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
+            <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
               {mainNavItems.map(item => (
                 <Link
                   key={item.href}
@@ -136,18 +136,13 @@ export function AppShell({children}: {children: React.ReactNode}) {
       if (!session) {
         if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
             router.push('/admin/login');
-        } else if (pathname.startsWith('/submit-prompt')) {
-            router.push('/login');
         }
       } else {
-        if (session.role !== 'admin' && (pathname.startsWith('/admin') || pathname.startsWith('/submit-prompt'))) {
+        if (session.role !== 'admin' && pathname.startsWith('/admin')) {
           router.push('/');
         }
         if (session.role === 'admin' && pathname === '/admin/login') {
           router.push('/admin');
-        }
-        if (pathname === '/login' || pathname === '/signup') {
-            router.push('/');
         }
       }
     };

@@ -51,7 +51,6 @@ export default async function Home() {
         <PromptDashboard
           initialPrompts={fullPrompts}
           allCategories={plainCategories}
-          user={user}
         />
       </main>
     </div>

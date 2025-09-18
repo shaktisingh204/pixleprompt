@@ -12,7 +12,7 @@ export async function signIn(email: string, password_input: string): Promise<voi
   await dbConnect();
   const user = await UserModel.findOne({ email: email }).exec();
 
-  if (!user || user.password !== password_input) {
+  if (!user || user.password !== password_input || user.role !== 'admin') {
     throw new Error('CredentialsSignin');
   }
 
@@ -24,6 +24,8 @@ export async function signIn(email: string, password_input: string): Promise<voi
   });
 }
 
+// This function is kept for potential future use or for seeding the first admin user,
+// but it is not exposed to the UI.
 export async function signUp(name: string, email: string, password_input: string): Promise<void> {
     await dbConnect();
     const existingUser = await UserModel.findOne({ email: email }).lean().exec();
@@ -44,7 +46,9 @@ export async function signUp(name: string, email: string, password_input: string
 
     await newUser.save();
 
-    await signIn(email, password_input);
+    if (role === 'admin') {
+        await signIn(email, password_input);
+    }
 }
 
 export async function signOut(): Promise<void> {

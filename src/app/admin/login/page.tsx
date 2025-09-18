@@ -9,6 +9,7 @@ export default function AdminLoginPage() {
           <Logo />
         </div>
         <h1 className="text-center font-headline text-2xl font-semibold">Admin Login</h1>
+        <p className="text-center text-muted-foreground">This login is for administrators only.</p>
         <LoginForm />
       </div>
     </main>

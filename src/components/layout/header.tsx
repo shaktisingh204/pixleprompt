@@ -33,9 +33,7 @@ export function Header({user}: HeaderProps) {
             <UserNav user={user} />
           </>
         ) : (
-            <Button asChild>
-                <Link href="/login">Login</Link>
-            </Button>
+            null
         )}
       </div>
     </header>
