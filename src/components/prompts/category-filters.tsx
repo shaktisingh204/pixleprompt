@@ -1,3 +1,4 @@
+
 'use client';
 
 import type {Category} from '@/lib/definitions';
