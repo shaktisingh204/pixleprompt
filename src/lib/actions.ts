@@ -189,6 +189,28 @@ export async function submitPrompt(
     const newPrompt = new PromptModel(newPromptData);
     await newPrompt.save();
 
+    // Send OneSignal notification
+    if (process.env.ONESIGNAL_REST_API_KEY) {
+      try {
+          await fetch('https://onesignal.com/api/v1/notifications', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json; charset=utf-8',
+                  'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`,
+              },
+              body: JSON.stringify({
+                  app_id: "c3c64ad1-60bb-47b5-a35f-440438172e0d",
+                  included_segments: ['Subscribed Users'],
+                  headings: { en: 'New Prompt Submitted! 🚀' },
+                  contents: { en: `A new creative prompt is ready for review: "${newPrompt.text.substring(0, 50)}..."` },
+                  web_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/prompt/${newPrompt.id}`
+              }),
+          });
+      } catch (notificationError) {
+          console.error('OneSignal notification failed:', notificationError);
+      }
+    }
+
     if (newPromptData.status === 'approved') {
         revalidatePath('/');
     }
@@ -209,28 +231,7 @@ export async function approvePrompt(promptId: string) {
     throw new Error('Unauthorized');
   }
 
-  const approvedPrompt = await PromptModel.findOneAndUpdate({ id: promptId }, { status: 'approved' }, { new: true });
-
-  if (approvedPrompt && process.env.ONESIGNAL_REST_API_KEY) {
-    try {
-        await fetch('https://onesignal.com/api/v1/notifications', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`,
-            },
-            body: JSON.stringify({
-                app_id: "c3c64ad1-60bb-47b5-a35f-440438172e0d",
-                included_segments: ['Subscribed Users'],
-                headings: { en: 'New Prompt Added! ✨' },
-                contents: { en: `A new creative prompt has been added: "${approvedPrompt.text.substring(0, 50)}..."` },
-                web_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/prompt/${approvedPrompt.id}`
-            }),
-        });
-    } catch (notificationError) {
-        console.error('OneSignal notification failed:', notificationError);
-    }
-  }
+  await PromptModel.findOneAndUpdate({ id: promptId }, { status: 'approved' }, { new: true });
   
   revalidatePath('/admin');
   revalidatePath('/');
