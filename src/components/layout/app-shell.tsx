@@ -1,7 +1,8 @@
+
 'use client';
 
 import type {User} from '@/lib/definitions';
-import {getSession} from '@/lib/auth';
+import {getSession} from '@/lib/actions';
 import Link from 'next/link';
 import {
   FileText,
@@ -126,14 +127,27 @@ function MainContent({
 
 export function AppShell({children}: {children: React.ReactNode}) {
   const [user, setUser] = useState<User | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const fetchSession = async () => {
       const session = await getSession();
       setUser(session);
+
+      // Perform client-side redirects based on role
+      if (session && session.role !== 'admin' && (pathname.startsWith('/admin') || pathname.startsWith('/submit-prompt'))) {
+        window.location.href = '/';
+      }
+      if (session && session.role === 'admin' && pathname === '/admin/login') {
+        window.location.href = '/admin';
+      }
+      if (session && (pathname === '/login' || pathname === '/signup')) {
+        window.location.href = '/';
+      }
+
     };
     fetchSession();
-  }, []);
+  }, [pathname]);
 
   return <MainContent user={user}>{children}</MainContent>;
 }

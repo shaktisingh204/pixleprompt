@@ -4,11 +4,35 @@
 import {z} from 'zod';
 import {redirect} from 'next/navigation';
 import {revalidatePath} from 'next/cache';
-import {getSession, signIn, signOut, signUp} from '@/lib/auth';
+import {getSessionCookie} from '@/lib/auth';
+import {signIn, signOut, signUp} from '@/lib/auth-actions';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
 import dbConnect, {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel, UserModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
+import type { User } from './definitions';
+
+
+export async function getSession(): Promise<User | null> {
+    const sessionCookie = await getSessionCookie();
+    if (!sessionCookie) return null;
+  
+    try {
+      await dbConnect();
+      const user = await UserModel.findOne({ email: sessionCookie }).lean().exec();
+      if (!user) {
+          // This case can happen if the user was deleted but the cookie remains.
+          await signOut(); // Clear the invalid cookie
+          return null;
+      }
+      // Convert document to plain object and remove password
+      const { password, ...userWithoutPassword } = user;
+      return JSON.parse(JSON.stringify(userWithoutPassword));
+    } catch (error) {
+      console.error('Failed to fetch session:', error);
+      return null;
+    }
+}
 
 
 const loginSchema = z.object({
@@ -42,7 +66,6 @@ export async function authenticate(
   formData: FormData
 ): Promise<LoginState | undefined> {
   try {
-    await dbConnect();
     const validatedFields = loginSchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
@@ -79,7 +102,6 @@ export async function register(
   formData: FormData
 ): Promise<SignupState | undefined> {
   try {
-    await dbConnect();
     const validatedFields = signupSchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {

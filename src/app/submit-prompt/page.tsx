@@ -1,4 +1,5 @@
-import {getSession} from '@/lib/auth';
+
+import {getSession} from '@/lib/actions';
 import {getCategories} from '@/lib/data';
 import {SubmitPromptForm} from '@/components/prompts/submit-prompt-form';
 import Link from 'next/link';

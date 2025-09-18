@@ -3,7 +3,7 @@ import {notFound} from 'next/navigation';
 import {getPrompts, getCategories, getUsers} from '@/lib/data';
 import {getPlaceholderImages} from '@/lib/placeholder-images';
 import type {FullPrompt, Prompt, Category, User} from '@/lib/definitions';
-import {getSession} from '@/lib/auth';
+import {getSession} from '@/lib/actions';
 import Image from 'next/image';
 import {Badge} from '@/components/ui/badge';
 import * as Lucide from 'lucide-react';

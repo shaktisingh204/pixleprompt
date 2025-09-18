@@ -1,5 +1,5 @@
 
-import {getSession} from '@/lib/auth';
+import {getSession} from '@/lib/actions';
 import {getPrompts, getCategories} from '@/lib/data';
 import {getPlaceholderImages} from '@/lib/placeholder-images';
 import type {FullPrompt} from '@/lib/definitions';

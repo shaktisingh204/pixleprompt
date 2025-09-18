@@ -1,3 +1,4 @@
+
 import type {User} from '@/lib/definitions';
 import {logout} from '@/lib/actions';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
