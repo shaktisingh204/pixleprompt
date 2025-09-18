@@ -68,58 +68,36 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
 
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
-      <div className="flex flex-col gap-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex items-center justify-between">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <div className="mx-auto w-full max-w-6xl">
+        <div className="flex items-center justify-between">
             <TabsList>
-              <TabsTrigger value="all">All Prompts</TabsTrigger>
-              <TabsTrigger value="favorites">Favorites</TabsTrigger>
+                <TabsTrigger value="all">All Prompts</TabsTrigger>
+                <TabsTrigger value="favorites">Favorites</TabsTrigger>
             </TabsList>
-          </div>
-          
-          <div className="w-full overflow-x-auto py-4">
+        </div>
+      </div>
+      
+      <div className="w-full overflow-x-auto py-4">
+        <div className="mx-auto w-full max-w-6xl">
             <CategoryFilters
-              categories={categoryCounts}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
+                categories={categoryCounts}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
             />
-          </div>
+        </div>
+      </div>
 
-          <TabsContent value="all">
-            {promptsWithAds.length > 0 ? (
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-                {promptsWithAds.map((item, index) => {
-                  if(item === 'ad') {
-                    return <AdBanner adId="native-prompt-grid" key={`ad-${index}`} className="aspect-[3/4] h-auto my-0" />
-                  }
-                  const prompt = item as FullPrompt;
-                  return (
-                    <PromptCard
-                      key={prompt.id}
-                      prompt={prompt}
-                      isFavorite={favoritePromptIds.has(prompt.id)}
-                      onToggleFavorite={toggleFavorite}
-                      isUserLoggedIn={!!user}
-                    />
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-                <h3 className="font-headline text-xl font-medium tracking-tight">
-                  No prompts found
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Try adjusting your filters or adding some prompts to your favorites.
-                </p>
-              </div>
-            )}
-          </TabsContent>
-          <TabsContent value="favorites">
-            {filteredPrompts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-                {filteredPrompts.map(prompt => (
+      <div className="mx-auto w-full max-w-6xl">
+        <TabsContent value="all">
+          {promptsWithAds.length > 0 ? (
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+              {promptsWithAds.map((item, index) => {
+                if(item === 'ad') {
+                  return <AdBanner adId="native-prompt-grid" key={`ad-${index}`} className="aspect-[3/4] h-auto my-0" />
+                }
+                const prompt = item as FullPrompt;
+                return (
                   <PromptCard
                     key={prompt.id}
                     prompt={prompt}
@@ -127,21 +105,45 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
                     onToggleFavorite={toggleFavorite}
                     isUserLoggedIn={!!user}
                   />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-                <h3 className="font-headline text-xl font-medium tracking-tight">
-                  No prompts found
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Try adding some prompts to your favorites.
-                </p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
+              <h3 className="font-headline text-xl font-medium tracking-tight">
+                No prompts found
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your filters or adding some prompts to your favorites.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="favorites">
+          {filteredPrompts.length > 0 ? (
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+              {filteredPrompts.map(prompt => (
+                <PromptCard
+                  key={prompt.id}
+                  prompt={prompt}
+                  isFavorite={favoritePromptIds.has(prompt.id)}
+                  onToggleFavorite={toggleFavorite}
+                  isUserLoggedIn={!!user}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
+              <h3 className="font-headline text-xl font-medium tracking-tight">
+                No prompts found
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Try adding some prompts to your favorites.
+              </p>
+            </div>
+          )}
+        </TabsContent>
       </div>
-    </div>
+    </Tabs>
   );
 }
