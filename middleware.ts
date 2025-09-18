@@ -6,10 +6,28 @@ export async function middleware(request: NextRequest) {
   const session = await getSession();
   const {pathname} = request.nextUrl;
 
-  const protectedRoutes = ['/admin', '/submit-prompt'];
+  const adminRoutes = ['/admin'];
+  const isAdminRoute = adminRoutes.some(path => pathname.startsWith(path) && path !== '/admin/login');
+  
+  // If user is not authenticated and is trying to access an admin route, redirect to admin login
+  if (!session && isAdminRoute) {
+    return NextResponse.redirect(new URL('/admin/login', request.url));
+  }
 
-  // If user is not authenticated and is trying to access a protected route, redirect to login
-  if (!session && protectedRoutes.some(path => pathname.startsWith(path))) {
+  // If user is authenticated as non-admin and tries to access admin route, redirect to home
+  if (session && isAdminRoute && session.role !== 'admin') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // If user is authenticated as admin and tries to access admin login, redirect to admin dashboard
+  if (session && session.role === 'admin' && pathname === '/admin/login') {
+    return NextResponse.redirect(new URL('/admin', request.url));
+  }
+
+  const protectedUserRoutes = ['/submit-prompt'];
+
+  // If user is not authenticated and is trying to access a protected user route, redirect to general login
+  if (!session && protectedUserRoutes.some(path => pathname.startsWith(path))) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
@@ -17,12 +35,6 @@ export async function middleware(request: NextRequest) {
   if (session && (pathname === '/login' || pathname === '/signup')) {
     return NextResponse.redirect(new URL('/', request.url));
   }
-
-  // If a non-admin user tries to access an admin-only route, redirect to home
-  if (session && protectedRoutes.some(path => pathname.startsWith(path)) && session.role !== 'admin') {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
 
   return NextResponse.next();
 }

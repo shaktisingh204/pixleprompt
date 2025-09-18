@@ -15,6 +15,18 @@ type AdManagerProps = {
   adCodes: AdCode[];
 };
 
+const adPlacementDescriptions: Record<string, string> = {
+    'banner-homepage-top': 'A banner ad displayed at the top of the main prompt library page.',
+    'native-prompt-grid': 'A native ad unit designed to blend in with the grid of prompt cards.',
+    'banner-prompt-detail-top': 'A banner ad shown at the top of an individual prompt\'s detail page.',
+    'banner-prompt-detail-bottom': 'A banner ad shown at the bottom of an individual prompt\'s detail page.',
+    'banner-contact-page': 'A banner ad displayed on the "Contact Us" page.',
+    'banner-submit-page': 'A banner ad displayed on the "Submit a Prompt" page.',
+    'banner-footer': 'A banner ad placed in the footer of the website on desktop.',
+    'rewarded-generate-prompt': 'The rewarded ad shown to users before they can generate a prompt.',
+  };
+  
+
 export function AdManager({ adCodes }: AdManagerProps) {
 
   return (
@@ -55,8 +67,11 @@ function AdCodeAccordionItem({ adCode }: { adCode: AdCode }) {
 
     return (
         <AccordionItem value={adCode.id}>
-            <AccordionTrigger className='font-medium'>{adCode.name}</AccordionTrigger>
+            <AccordionTrigger className='font-medium text-left'>{adCode.name}</AccordionTrigger>
             <AccordionContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                    {adPlacementDescriptions[adCode.id] || 'No description available.'}
+                </p>
                 <form ref={formRef} action={dispatch} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor={`code-${adCode.id}`}>Ad Code (HTML/Script)</Label>

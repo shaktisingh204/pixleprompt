@@ -1,20 +1,15 @@
 import {LoginForm} from '@/components/auth/login-form';
 import {Logo} from '@/components/logo';
-import Link from 'next/link';
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-4">
         <div className="text-center">
           <Logo />
         </div>
+        <h1 className="text-center font-headline text-2xl font-semibold">Admin Login</h1>
         <LoginForm />
-        <div className="text-center text-sm">
-          <Link href="/admin/login" className="underline text-muted-foreground">
-            Are you an administrator?
-          </Link>
-        </div>
       </div>
     </main>
   );
