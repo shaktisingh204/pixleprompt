@@ -42,6 +42,7 @@ export async function authenticate(
   formData: FormData
 ): Promise<LoginState | undefined> {
   try {
+    await dbConnect();
     const validatedFields = loginSchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
@@ -78,6 +79,7 @@ export async function register(
   formData: FormData
 ): Promise<SignupState | undefined> {
   try {
+    await dbConnect();
     const validatedFields = signupSchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
@@ -191,7 +193,7 @@ export async function submitPrompt(
     await newPrompt.save();
 
     // Send OneSignal notification
-    if (process.env.ONESIGNAL_REST_API_KEY && newPrompt.status === 'approved') {
+    if (process.env.ONESIGNAL_REST_API_KEY) {
       try {
           await fetch('https://onesignal.com/api/v1/notifications', {
               method: 'POST',
@@ -232,27 +234,6 @@ export async function approvePrompt(promptId: string) {
 
   await dbConnect();
   const prompt = await PromptModel.findOneAndUpdate({ id: promptId }, { status: 'approved' }, { new: true });
-
-  if (prompt && process.env.ONESIGNAL_REST_API_KEY) {
-    try {
-        await fetch('https://onesignal.com/api/v1/notifications', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`,
-            },
-            body: JSON.stringify({
-                app_id: "c3c64ad1-60bb-47b5-a35f-440438172e0d",
-                included_segments: ['Subscribed Users'],
-                headings: { en: 'New Prompt Added! ✨' },
-                contents: { en: `A new creative prompt is ready: "${prompt.text.substring(0, 50)}..."` },
-                web_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/prompt/${prompt.id}`
-            }),
-        });
-    } catch (notificationError) {
-        console.error('OneSignal notification failed:', notificationError);
-    }
-  }
   
   revalidatePath('/admin');
   revalidatePath('/');
@@ -312,7 +293,7 @@ export async function createCategory(prevState: CategoryState | undefined, formD
     if (session?.role !== 'admin') {
         throw new Error('Unauthorized');
     }
-
+    await dbConnect();
     const validatedFields = categorySchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
@@ -321,7 +302,6 @@ export async function createCategory(prevState: CategoryState | undefined, formD
         };
     }
     
-    await dbConnect();
     const { name, icon } = validatedFields.data;
 
     try {
@@ -343,7 +323,7 @@ export async function updateCategory(categoryId: string, prevState: CategoryStat
     if (session?.role !== 'admin') {
         throw new Error('Unauthorized');
     }
-
+    await dbConnect();
     const validatedFields = categorySchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
@@ -352,7 +332,6 @@ export async function updateCategory(categoryId: string, prevState: CategoryStat
         };
     }
     
-    await dbConnect();
     const { name, icon } = validatedFields.data;
 
     try {
@@ -399,7 +378,7 @@ export async function updateAdCode(adId: string, prevState: AdCodeState | undefi
     if (session?.role !== 'admin') {
         throw new Error('Unauthorized');
     }
-
+    await dbConnect();
     const validatedFields = adCodeSchema.safeParse(Object.fromEntries(formData.entries()));
     if (!validatedFields.success) {
         return {
@@ -408,7 +387,6 @@ export async function updateAdCode(adId: string, prevState: AdCodeState | undefi
     }
     
     try {
-        await dbConnect();
         await AdCodeModel.findOneAndUpdate({ id: adId }, { code: validatedFields.data.code });
         revalidatePath('/admin');
         return { success: true, message: 'Ad code updated successfully.' };
