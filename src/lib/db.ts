@@ -27,15 +27,14 @@ async function dbConnect() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then(async (mongoose) => {
+      await seedData();
       return mongoose;
     });
   }
   cached.conn = await cached.promise;
-  await seedData();
   return cached.conn;
 }
-
 
 const UserSchema = new Schema<User>({
   id: { type: String, required: true, unique: true },
@@ -89,15 +88,16 @@ export type { User, Category, Prompt, ImagePlaceholder, AdCode };
 
 async function seedData() {
     try {
-        const uncategorizedCategory = await CategoryModel.findOne({ id: 'cat-0' });
+        const uncategorizedCategory = await (models.Category || model('Category', CategorySchema)).findOne({ id: 'cat-0' });
         if (!uncategorizedCategory) {
-            await CategoryModel.create({ id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'});
+            await (models.Category || model('Category', CategorySchema)).create({ id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'});
         }
 
-        const adCodeCount = await AdCodeModel.countDocuments();
+        const adCodeModel = models.AdCode || model('AdCode', AdCodeSchema);
+        const adCodeCount = await adCodeModel.countDocuments();
         if(adCodeCount === 0) {
             const defaultAdCode = '<div class="flex items-center justify-center w-full h-full bg-muted border border-dashed rounded-lg my-4"><span class="text-muted-foreground text-sm">Ad Placement</span></div>';
-            await AdCodeModel.insertMany([
+            await adCodeModel.insertMany([
                 { id: 'banner-homepage-top', name: 'Homepage Top Banner', type: 'banner', code: defaultAdCode.replace('my-4', '') },
                 { id: 'native-prompt-grid', name: 'Prompt Grid Native Ad', type: 'native', code: defaultAdCode.replace('my-4', 'h-full') },
                 { id: 'banner-prompt-detail-top', name: 'Prompt Detail Page (Top)', type: 'banner', code: defaultAdCode },

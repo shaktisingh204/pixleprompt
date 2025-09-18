@@ -7,7 +7,7 @@ import {revalidatePath} from 'next/cache';
 import {getSession, signIn, signOut, signUp} from '@/lib/auth';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel, UserModel} from '@/lib/db';
+import dbConnect, {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel, UserModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -145,8 +145,8 @@ export async function submitPrompt(
 ): Promise<SubmitPromptState> {
   try {
     const session = await getSession();
-    if (!session || session.role !== 'admin') {
-      throw new Error('You must be an administrator to submit a prompt.');
+    if (!session) {
+      throw new Error('You must be logged in to submit a prompt.');
     }
 
     const validatedFields = submitPromptSchema.safeParse(Object.fromEntries(formData.entries()));
@@ -158,6 +158,7 @@ export async function submitPrompt(
       };
     }
 
+    await dbConnect();
     const {text, categoryId, image} = validatedFields.data;
 
     const imageId = `img_prompt_${Date.now()}_${uuidv4()}`;
@@ -176,13 +177,13 @@ export async function submitPrompt(
       uploadedBy: session.id,
     });
     await newImage.save();
-
+    
     const newPromptData: Partial<Prompt> = {
       id: `p-${uuidv4()}`,
       text,
       categoryId,
       imageId: imageId,
-      status: 'approved',
+      status: session.role === 'admin' ? 'approved' : 'pending',
       submittedBy: session.id,
     };
     
@@ -190,7 +191,7 @@ export async function submitPrompt(
     await newPrompt.save();
 
     // Send OneSignal notification
-    if (process.env.ONESIGNAL_REST_API_KEY) {
+    if (process.env.ONESIGNAL_REST_API_KEY && newPrompt.status === 'approved') {
       try {
           await fetch('https://onesignal.com/api/v1/notifications', {
               method: 'POST',
@@ -211,6 +212,7 @@ export async function submitPrompt(
       }
     }
 
+
     revalidatePath('/');
     revalidatePath('/admin');
     return {success: true, message: 'Prompt submitted successfully!'};
@@ -228,7 +230,29 @@ export async function approvePrompt(promptId: string) {
     throw new Error('Unauthorized');
   }
 
-  await PromptModel.findOneAndUpdate({ id: promptId }, { status: 'approved' }, { new: true });
+  await dbConnect();
+  const prompt = await PromptModel.findOneAndUpdate({ id: promptId }, { status: 'approved' }, { new: true });
+
+  if (prompt && process.env.ONESIGNAL_REST_API_KEY) {
+    try {
+        await fetch('https://onesignal.com/api/v1/notifications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`,
+            },
+            body: JSON.stringify({
+                app_id: "c3c64ad1-60bb-47b5-a35f-440438172e0d",
+                included_segments: ['Subscribed Users'],
+                headings: { en: 'New Prompt Added! ✨' },
+                contents: { en: `A new creative prompt is ready: "${prompt.text.substring(0, 50)}..."` },
+                web_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/prompt/${prompt.id}`
+            }),
+        });
+    } catch (notificationError) {
+        console.error('OneSignal notification failed:', notificationError);
+    }
+  }
   
   revalidatePath('/admin');
   revalidatePath('/');
@@ -240,6 +264,7 @@ export async function rejectPrompt(promptId: string) {
     throw new Error('Unauthorized');
   }
   
+  await dbConnect();
   await PromptModel.deleteOne({ id: promptId });
 
   revalidatePath('/admin');
@@ -252,6 +277,7 @@ export async function deletePrompt(promptId: string) {
     throw new Error('Unauthorized');
   }
   
+  await dbConnect();
   const prompt = await PromptModel.findOne({ id: promptId });
   if (prompt) {
     // Also delete the associated user-uploaded image
@@ -295,6 +321,7 @@ export async function createCategory(prevState: CategoryState | undefined, formD
         };
     }
     
+    await dbConnect();
     const { name, icon } = validatedFields.data;
 
     try {
@@ -325,6 +352,7 @@ export async function updateCategory(categoryId: string, prevState: CategoryStat
         };
     }
     
+    await dbConnect();
     const { name, icon } = validatedFields.data;
 
     try {
@@ -343,6 +371,7 @@ export async function deleteCategory(categoryId: string) {
     }
 
     try {
+        await dbConnect();
         await CategoryModel.deleteOne({ id: categoryId });
         await PromptModel.updateMany({ categoryId: categoryId }, { categoryId: 'cat-0' }); // Re-assign prompts to 'Uncategorized'
         revalidatePath('/admin');
@@ -379,6 +408,7 @@ export async function updateAdCode(adId: string, prevState: AdCodeState | undefi
     }
     
     try {
+        await dbConnect();
         await AdCodeModel.findOneAndUpdate({ id: adId }, { code: validatedFields.data.code });
         revalidatePath('/admin');
         return { success: true, message: 'Ad code updated successfully.' };
@@ -388,6 +418,7 @@ export async function updateAdCode(adId: string, prevState: AdCodeState | undefi
 }
 
 export async function getAdCodesForClient(): Promise<Record<string, string>> {
+    await dbConnect();
     const adCodes = await AdCodeModel.find().lean().exec() as AdCode[];
     const codeMap: Record<string, string> = {};
     for (const ad of adCodes) {
@@ -402,6 +433,7 @@ export async function toggleFavoritePrompt(promptId: string) {
     throw new Error('Unauthorized');
   }
 
+  await dbConnect();
   const user = await UserModel.findOne({ id: session.id });
   if (!user) {
     throw new Error('User not found');
@@ -429,6 +461,7 @@ export async function toggleFavoritePrompt(promptId: string) {
 }
 
 export async function incrementCopyCount(promptId: string) {
+    await dbConnect();
     await PromptModel.updateOne({ id: promptId }, { $inc: { copiesCount: 1 } });
     revalidatePath(`/prompt/${promptId}`);
 }

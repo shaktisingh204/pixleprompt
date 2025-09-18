@@ -6,6 +6,7 @@ export type ImagePlaceholder = {
   description: string;
   imageUrl: string;
   imageHint: string;
+  uploadedBy?: string;
 };
 
 export async function getPlaceholderImages(): Promise<ImagePlaceholder[]> {

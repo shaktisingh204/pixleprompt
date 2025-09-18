@@ -16,6 +16,10 @@ export async function getSession(): Promise<User | null> {
   try {
     await dbConnect();
     const user = await UserModel.findOne({ email: sessionCookie }).lean().exec();
+    if (!user) {
+        cookies().delete(SESSION_COOKIE_NAME);
+        return null;
+    }
     return (user as User) || null;
   } catch (error) {
     console.error('Failed to fetch session:', error);
@@ -25,7 +29,7 @@ export async function getSession(): Promise<User | null> {
 
 export async function signIn(email: string, password_input: string): Promise<void> {
   await dbConnect();
-  const user = await UserModel.findOne({ email: email }).lean().exec();
+  const user = await UserModel.findOne({ email: email }).exec();
 
   if (!user || user.password !== password_input) {
     throw new Error('CredentialsSignin');
