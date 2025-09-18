@@ -1,3 +1,4 @@
+
 import {getSession} from '@/lib/auth';
 import {getPrompts, getCategories} from '@/lib/data';
 import {getPlaceholderImages} from '@/lib/placeholder-images';
@@ -22,13 +23,18 @@ export default async function Home() {
   const fullPrompts: FullPrompt[] = approvedPrompts.map(prompt => {
     const category = categoryMap.get(prompt.categoryId);
     const image = imageMap.get(prompt.imageId);
+    const plainPrompt = JSON.parse(JSON.stringify(prompt));
+    const plainCategory = category ? JSON.parse(JSON.stringify(category)) : {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'};
+
     return {
-      ...prompt,
-      category: category || {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'},
+      ...plainPrompt,
+      category: plainCategory,
       imageUrl: image?.imageUrl || 'https://placehold.co/600x400',
       imageHint: image?.imageHint || 'placeholder',
     };
   });
+
+  const plainCategories = categories.map(cat => JSON.parse(JSON.stringify(cat)));
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -44,7 +50,7 @@ export default async function Home() {
         </div>
         <PromptDashboard
           initialPrompts={fullPrompts}
-          allCategories={categories}
+          allCategories={plainCategories}
           user={user}
         />
       </main>

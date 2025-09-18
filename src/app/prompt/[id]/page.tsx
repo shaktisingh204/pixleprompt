@@ -1,3 +1,4 @@
+
 import {notFound} from 'next/navigation';
 import {getPrompts, getCategories, getUsers} from '@/lib/data';
 import {getPlaceholderImages} from '@/lib/placeholder-images';
@@ -34,9 +35,12 @@ export default async function PromptPage({params}: {params: {id: string}}) {
 
   const CategoryIcon = category ? (Lucide[category.icon] as Lucide.LucideIcon) : Lucide.AlertCircle;
 
+  const plainPrompt = JSON.parse(JSON.stringify(prompt));
+  const plainCategory = category ? JSON.parse(JSON.stringify(category)) : {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'};
+
   const fullPrompt: FullPrompt & {submittedBy?: {name: string}} = {
-    ...prompt,
-    category: category || {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'},
+    ...plainPrompt,
+    category: plainCategory,
     imageUrl: image?.imageUrl || 'https://placehold.co/600x400',
     imageHint: image?.imageHint || 'placeholder',
     submittedBy: submitter ? {name: submitter.name} : undefined,
@@ -48,9 +52,12 @@ export default async function PromptPage({params}: {params: {id: string}}) {
     .map(p => {
       const pCategory = allCategories.find(c => c.id === p.categoryId);
       const pImage = placeholderImages.find(i => i.id === p.imageId);
+      const plainRelatedPrompt = JSON.parse(JSON.stringify(p));
+      const plainRelatedCategory = pCategory ? JSON.parse(JSON.stringify(pCategory)) : {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'};
+
       return {
-        ...p,
-        category: pCategory || {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'},
+        ...plainRelatedPrompt,
+        category: plainRelatedCategory,
         imageUrl: pImage?.imageUrl || 'https://placehold.co/600x400',
         imageHint: pImage?.imageHint || 'placeholder',
       };
