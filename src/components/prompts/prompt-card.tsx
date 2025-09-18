@@ -11,22 +11,22 @@ import {useTransition} from 'react';
 
 type PromptCardProps = {
   prompt: FullPrompt;
-  isFavorite: boolean;
-  onToggleFavorite: (promptId: string) => Promise<void>;
+  isLiked: boolean;
+  onToggleLike: (promptId: string) => Promise<void>;
 };
 
 export function PromptCard({
   prompt,
-  isFavorite,
-  onToggleFavorite,
+  isLiked,
+  onToggleLike,
 }: PromptCardProps) {
   const CategoryIcon = Lucide[prompt.category.icon] as Lucide.LucideIcon;
   const [isPending, startTransition] = useTransition();
 
-  const handleFavoriteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleLikeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     startTransition(async () => {
-      await onToggleFavorite(prompt.id);
+      await onToggleLike(prompt.id);
     });
   };
 
@@ -60,14 +60,14 @@ export function PromptCard({
             variant="ghost"
             size="icon"
             className="group/heart z-10 rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
-            onClick={handleFavoriteClick}
+            onClick={handleLikeClick}
             disabled={isPending}
-            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            aria-label={isLiked ? 'Unlike prompt' : 'Like prompt'}
           >
             <Heart
               className={cn(
                 'h-5 w-5 transition-all group-hover/heart:text-accent',
-                isFavorite && 'fill-accent text-accent'
+                isLiked && 'fill-accent text-accent'
               )}
             />
           </Button>

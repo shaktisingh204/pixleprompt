@@ -379,10 +379,9 @@ export async function getAdCodesForClient(): Promise<Record<string, string>> {
     return codeMap;
 }
 
-export async function toggleFavoritePrompt(promptId: string, isCurrentlyFavorite: boolean) {
+export async function toggleFavoritePrompt(promptId: string, decrement: boolean) {
     await dbConnect();
-  
-    const updateCount = isCurrentlyFavorite ? -1 : 1;
+    const updateCount = decrement ? -1 : 1;
   
     await PromptModel.updateOne({ id: promptId }, { $inc: { favoritesCount: updateCount } });
   

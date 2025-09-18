@@ -9,6 +9,25 @@ import { AdBanner } from '../ad-banner';
 import { toggleFavoritePrompt } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 
+const getLikedPrompts = (): Record<string, boolean> => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const liked = window.localStorage.getItem('likedPrompts');
+      return liked ? JSON.parse(liked) : {};
+    } catch (error) {
+      console.error('Error reading from localStorage', error);
+      return {};
+    }
+  };
+  
+  const setLikedPrompts = (liked: Record<string, boolean>) => {
+    try {
+      window.localStorage.setItem('likedPrompts', JSON.stringify(liked));
+    } catch (error) {
+      console.error('Error writing to localStorage', error);
+    }
+  };
+
 type PromptDashboardProps = {
   initialPrompts: FullPrompt[];
   allCategories: Category[];
@@ -16,42 +35,57 @@ type PromptDashboardProps = {
 
 export function PromptDashboard({initialPrompts, allCategories}: PromptDashboardProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [optimisticFavorites, setOptimisticFavorites] = useState<Record<string, {isFavorite: boolean, count: number}>>({});
+  const [optimisticLikes, setOptimisticLikes] = useState<Record<string, {isLiked: boolean, count: number}>>({});
   const { toast } = useToast();
 
   useEffect(() => {
-    // Initialize the optimistic state from the initial prompts
-    const initialFavorites: Record<string, {isFavorite: boolean, count: number}> = {};
+    const localLikes = getLikedPrompts();
+    const initialLikes: Record<string, {isLiked: boolean, count: number}> = {};
     initialPrompts.forEach(p => {
-        initialFavorites[p.id] = { isFavorite: false, count: p.favoritesCount };
+        initialLikes[p.id] = { isLiked: !!localLikes[p.id], count: p.favoritesCount };
     });
-    setOptimisticFavorites(initialFavorites);
+    setOptimisticLikes(initialLikes);
   }, [initialPrompts]);
 
 
-  const handleToggleFavorite = async (promptId: string) => {
-    const currentStatus = optimisticFavorites[promptId] || { isFavorite: false, count: 0 };
-    const newIsFavorite = !currentStatus.isFavorite;
-    const newCount = currentStatus.count + (newIsFavorite ? 1 : -1);
+  const handleToggleLike = async (promptId: string) => {
+    const currentStatus = optimisticLikes[promptId] || { isLiked: false, count: 0 };
+    const newIsLiked = !currentStatus.isLiked;
+    const newCount = currentStatus.count + (newIsLiked ? 1 : -1);
 
-    // Optimistically update the UI
-    setOptimisticFavorites(prev => ({
+    setOptimisticLikes(prev => ({
         ...prev,
         [promptId]: {
-            isFavorite: newIsFavorite,
+            isLiked: newIsLiked,
             count: newCount,
         }
     }));
     
+    const localLikes = getLikedPrompts();
+    if (newIsLiked) {
+        localLikes[promptId] = true;
+    } else {
+        delete localLikes[promptId];
+    }
+    setLikedPrompts(localLikes);
+
     try {
-        await toggleFavoritePrompt(promptId, currentStatus.isFavorite);
+        await toggleFavoritePrompt(promptId, !newIsLiked); // Pass true to decrement
     } catch (error) {
-        // Revert the optimistic update on error
-        setOptimisticFavorites(prev => ({
+        setOptimisticLikes(prev => ({
             ...prev,
             [promptId]: currentStatus
         }));
-        toast({ title: "Error", description: "Could not update favorite status. Please try again.", variant: 'destructive' });
+        
+        const revertedLikes = getLikedPrompts();
+        if (currentStatus.isLiked) {
+            revertedLikes[promptId] = true;
+        } else {
+            delete revertedLikes[promptId];
+        }
+        setLikedPrompts(revertedLikes);
+        
+        toast({ title: "Error", description: "Could not update like status. Please try again.", variant: 'destructive' });
     }
   };
 
@@ -73,12 +107,11 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
     if (selectedCategory) {
       prompts = prompts.filter(p => p.categoryId === selectedCategory);
     }
-    // Update prompts with optimistic counts
     return prompts.map(p => ({
         ...p,
-        favoritesCount: optimisticFavorites[p.id]?.count ?? p.favoritesCount,
+        favoritesCount: optimisticLikes[p.id]?.count ?? p.favoritesCount,
     }));
-  }, [initialPrompts, selectedCategory, optimisticFavorites]);
+  }, [initialPrompts, selectedCategory, optimisticLikes]);
 
   const promptsWithAds = useMemo(() => {
     const items: (FullPrompt | 'ad')[] = [];
@@ -109,14 +142,14 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
               return <AdBanner adId="native-prompt-grid" key={`ad-${index}`} className="aspect-[3/4] h-auto my-0" />
             }
             const prompt = item as FullPrompt;
-            const favoriteStatus = optimisticFavorites[prompt.id] || { isFavorite: false, count: prompt.favoritesCount };
+            const likeStatus = optimisticLikes[prompt.id] || { isLiked: false, count: prompt.favoritesCount };
 
             return (
               <PromptCard
                 key={prompt.id}
                 prompt={prompt}
-                isFavorite={favoriteStatus.isFavorite}
-                onToggleFavorite={handleToggleFavorite}
+                isLiked={likeStatus.isLiked}
+                onToggleLike={handleToggleLike}
               />
             )
           })}
