@@ -10,6 +10,7 @@ import {
   Mail,
   LayoutGrid,
   MoreHorizontal,
+  PanelLeft,
 } from 'lucide-react';
 import {usePathname, useRouter} from 'next/navigation';
 import {useEffect, useState} from 'react';
@@ -32,7 +33,6 @@ function MainContent({
   user: User | null;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
   const [isLinksSheetOpen, setLinksSheetOpen] = useState(false);
 
@@ -45,9 +45,6 @@ function MainContent({
 
   const handleSheetOpenChange = (open: boolean) => {
     setLinksSheetOpen(open);
-    if (!open) {
-      router.push('/');
-    }
   };
 
   const mainNavItems = [
@@ -68,7 +65,7 @@ function MainContent({
       {isMobile && (
         <>
           <div className="fixed bottom-0 left-0 z-50 w-full h-16 border-t bg-background">
-            <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
+            <div className="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
               {mainNavItems.map(item => (
                 <Link
                   key={item.href}
@@ -97,7 +94,7 @@ function MainContent({
             </div>
           </div>
           <Sheet open={isLinksSheetOpen} onOpenChange={handleSheetOpenChange}>
-            <SheetContent side="bottom">
+            <SheetContent side="bottom" className='rounded-t-lg'>
               <SheetHeader>
                 <SheetTitle>More Options</SheetTitle>
               </SheetHeader>
@@ -128,26 +125,34 @@ function MainContent({
 export function AppShell({children}: {children: React.ReactNode}) {
   const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchSession = async () => {
       const session = await getSession();
       setUser(session);
 
-      // Perform client-side redirects based on role
-      if (session && session.role !== 'admin' && (pathname.startsWith('/admin') || pathname.startsWith('/submit-prompt'))) {
-        window.location.href = '/';
+      // Perform client-side redirects based on role and path
+      if (!session) {
+        if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+            router.push('/admin/login');
+        } else if (pathname.startsWith('/submit-prompt')) {
+            router.push('/login');
+        }
+      } else {
+        if (session.role !== 'admin' && (pathname.startsWith('/admin') || pathname.startsWith('/submit-prompt'))) {
+          router.push('/');
+        }
+        if (session.role === 'admin' && pathname === '/admin/login') {
+          router.push('/admin');
+        }
+        if (pathname === '/login' || pathname === '/signup') {
+            router.push('/');
+        }
       }
-      if (session && session.role === 'admin' && pathname === '/admin/login') {
-        window.location.href = '/admin';
-      }
-      if (session && (pathname === '/login' || pathname === '/signup')) {
-        window.location.href = '/';
-      }
-
     };
     fetchSession();
-  }, [pathname]);
+  }, [pathname, router]);
 
   return <MainContent user={user}>{children}</MainContent>;
 }

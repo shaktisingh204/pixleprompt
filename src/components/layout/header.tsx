@@ -22,22 +22,21 @@ export function Header({user}: HeaderProps) {
       <div className="flex flex-1 items-center justify-end space-x-4">
         {user ? (
           <>
-            {user.role === 'admin' && (
-              <>
-                <Button variant="outline" asChild>
-                  <Link href="/admin">Admin Panel</Link>
-                </Button>
-                 <Button asChild className="hidden md:flex">
-                    <Link href="/submit-prompt">
-                        <PlusCircle className="mr-2" />
-                        Submit Prompt
-                    </Link>
-                </Button>
-              </>
+            {(user.role === 'admin') && (
+              <Button asChild>
+                <Link href="/submit-prompt">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Submit Prompt
+                </Link>
+              </Button>
             )}
             <UserNav user={user} />
           </>
-        ) : null}
+        ) : (
+            <Button asChild>
+                <Link href="/login">Login</Link>
+            </Button>
+        )}
       </div>
     </header>
   );

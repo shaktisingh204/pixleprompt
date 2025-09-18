@@ -7,31 +7,29 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = await getSessionCookie();
   const {pathname} = request.nextUrl;
 
-  const adminRoutes = ['/admin', '/submit-prompt'];
-  const isAdminRoute = adminRoutes.some(path => pathname.startsWith(path));
-
-  // If user is not authenticated (no cookie) and is trying to access an admin route, redirect to admin login
-  if (!sessionCookie && isAdminRoute && pathname !== '/admin/login') {
+  const adminRoutes = ['/admin'];
+  const isAdminRoute = adminRoutes.some(path => pathname.startsWith(path) && path !== '/admin/login');
+  
+  // If user is not authenticated and is trying to access an admin route, redirect to admin login
+  if (!sessionCookie && isAdminRoute) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
-  
-  // If a user has a session cookie and tries to access a login page, redirect them.
-  // The actual role-based redirect (e.g., admin to /admin, user to /) is handled
-  // client-side in AppShell to avoid DB calls here.
-  if (sessionCookie && (pathname === '/admin/login' || pathname === '/login' || pathname === '/signup')) {
-      if (pathname === '/admin/login') {
-          return NextResponse.redirect(new URL('/admin', request.url));
-      }
-      if (pathname === '/login' || pathname === '/signup') {
-        return NextResponse.redirect(new URL('/', request.url));
-      }
+
+  // If user has a session and tries to access admin login, redirect to admin dashboard
+  if (sessionCookie && pathname === '/admin/login') {
+    return NextResponse.redirect(new URL('/admin', request.url));
   }
-  
-  const protectedUserRoutes: string[] = [];
+
+  const protectedUserRoutes = ['/submit-prompt'];
 
   // If user is not authenticated and is trying to access a protected user route, redirect to general login
   if (!sessionCookie && protectedUserRoutes.some(path => pathname.startsWith(path))) {
     return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // If user is authenticated and is trying to access login or signup, redirect to home
+  if (sessionCookie && (pathname === '/login' || pathname === '/signup')) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();
