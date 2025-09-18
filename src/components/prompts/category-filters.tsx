@@ -5,6 +5,8 @@ import type {Category} from '@/lib/definitions';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
 import * as Lucide from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 type CategoryFiltersProps = {
   categories: (Category & {promptCount: number})[];
@@ -32,9 +34,10 @@ export function CategoryFilters({
   };
 
   const allItems = [{id: null, name: 'All', promptCount: totalPrompts, icon: 'LayoutGrid' as const}, ...categories];
+  const isMobile = useIsMobile();
 
   return (
-    <div className="flex space-x-2 whitespace-nowrap">
+    <div className="whitespace-nowrap">
       {allItems.map(item => {
         const isActive = selectedCategory === item.id;
         const isAllButton = item.id === null;
@@ -44,7 +47,7 @@ export function CategoryFilters({
               variant="ghost"
               onClick={() => onSelectCategory(item.id)}
               className={cn(
-                'group h-auto py-2 px-4',
+                'group h-auto py-2 px-4 mr-2',
                 isActive ? 'bg-primary/10 text-primary' : ''
               )}
             >
