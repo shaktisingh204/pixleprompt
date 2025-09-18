@@ -82,25 +82,23 @@ const AdCodeSchema = new Schema<AdCode>({
     type: { type: String, enum: ['banner', 'interstitial', 'rewarded', 'native'], required: true },
 });
 
-// The key change is here: using mongoose.models to prevent redefining models
-export const UserModel = mongoose.models.User || mongoose.model<User>('User', UserSchema);
-export const CategoryModel = mongoose.models.Category || mongoose.model<Category>('Category', CategorySchema);
-export const PromptModel = mongoose.models.Prompt || mongoose.model<Prompt>('Prompt', PromptSchema);
-export const PlaceholderImageModel = mongoose.models.PlaceholderImage || mongoose.model<ImagePlaceholder>('PlaceholderImage', PlaceholderImageSchema);
-export const AdCodeModel = mongoose.models.AdCode || mongoose.model<AdCode>('AdCode', AdCodeSchema);
-
+export const UserModel = models.User || model<User>('User', UserSchema);
+export const CategoryModel = models.Category || model<Category>('Category', CategorySchema);
+export const PromptModel = models.Prompt || model<Prompt>('Prompt', PromptSchema);
+export const PlaceholderImageModel = models.PlaceholderImage || model<ImagePlaceholder>('PlaceholderImage', PlaceholderImageSchema);
+export const AdCodeModel = models.AdCode || model<AdCode>('AdCode', AdCodeSchema);
 
 export type { User, Category, Prompt, ImagePlaceholder, AdCode };
 
 
 async function seedData() {
     try {
-        const uncategorizedCategory = await (mongoose.models.Category || mongoose.model('Category', CategorySchema)).findOne({ id: 'cat-0' });
+        const uncategorizedCategory = await (models.Category || model('Category', CategorySchema)).findOne({ id: 'cat-0' });
         if (!uncategorizedCategory) {
-            await (mongoose.models.Category || mongoose.model('Category', CategorySchema)).create({ id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'});
+            await (models.Category || model('Category', CategorySchema)).create({ id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'});
         }
 
-        const adCodeModel = mongoose.models.AdCode || mongoose.model('AdCode', AdCodeSchema);
+        const adCodeModel = models.AdCode || model('AdCode', AdCodeSchema);
         const adCodeCount = await adCodeModel.countDocuments();
         if(adCodeCount === 0) {
             const defaultAdCode = '<div class="flex items-center justify-center w-full h-full bg-muted border border-dashed rounded-lg my-4"><span class="text-muted-foreground text-sm">Ad Placement</span></div>';
@@ -119,6 +117,5 @@ async function seedData() {
         console.error("Error seeding essential data:", error);
     }
 }
-
 
 export default dbConnect;

@@ -147,8 +147,8 @@ export async function submitPrompt(
 ): Promise<SubmitPromptState> {
   try {
     const session = await getSession();
-    if (!session) {
-      throw new Error('You must be logged in to submit a prompt.');
+    if (!session || session.role !== 'admin') {
+      throw new Error('You must be an admin to submit a prompt.');
     }
 
     const validatedFields = submitPromptSchema.safeParse(Object.fromEntries(formData.entries()));
@@ -185,7 +185,7 @@ export async function submitPrompt(
       text,
       categoryId,
       imageId: imageId,
-      status: session.role === 'admin' ? 'approved' : 'pending',
+      status: 'approved',
       submittedBy: session.id,
     };
     
@@ -424,7 +424,10 @@ export async function toggleFavoritePrompt(promptId: string) {
     user.favoritePrompts = user.favoritePrompts?.filter(id => id !== promptId);
     updateCount = -1;
   } else {
-    user.favoritePrompts?.push(promptId);
+    if (!user.favoritePrompts) {
+      user.favoritePrompts = [];
+    }
+    user.favoritePrompts.push(promptId);
     updateCount = 1;
   }
 
