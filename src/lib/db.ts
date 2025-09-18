@@ -47,7 +47,6 @@ const UserSchema = new Schema<User>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'user'], required: true, default: 'user' },
-  favoritePrompts: { type: [String], default: [] },
 });
 
 const CategorySchema = new Schema<Category>({

@@ -8,7 +8,6 @@ export interface User extends Document {
   email: string;
   password?: string; // Should not be sent to client
   role: 'admin' | 'user';
-  favoritePrompts?: string[];
 };
 
 export interface Category extends Document {

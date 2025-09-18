@@ -5,9 +5,9 @@ import {useState, useMemo, useEffect} from 'react';
 import type {FullPrompt, Category, User} from '@/lib/definitions';
 import {CategoryFilters} from './category-filters';
 import {PromptCard} from './prompt-card';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import { AdBanner } from '../ad-banner';
 import { toggleFavoritePrompt } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 type PromptDashboardProps = {
   initialPrompts: FullPrompt[];
@@ -16,25 +16,44 @@ type PromptDashboardProps = {
 };
 
 export function PromptDashboard({initialPrompts, allCategories, user}: PromptDashboardProps) {
-  const [activeTab, setActiveTab] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [favoritePromptIds, setFavoritePromptIds] = useState<Set<string>>(new Set(user?.favoritePrompts || []));
+  const [optimisticFavorites, setOptimisticFavorites] = useState<Record<string, {isFavorite: boolean, count: number}>>({});
+  const { toast } = useToast();
 
   useEffect(() => {
-    setFavoritePromptIds(new Set(user?.favoritePrompts || []));
-  }, [user]);
+    // Initialize the optimistic state from the initial prompts
+    const initialFavorites: Record<string, {isFavorite: boolean, count: number}> = {};
+    initialPrompts.forEach(p => {
+        initialFavorites[p.id] = { isFavorite: false, count: p.favoritesCount };
+    });
+    setOptimisticFavorites(initialFavorites);
+  }, [initialPrompts]);
+
 
   const handleToggleFavorite = async (promptId: string) => {
-    setFavoritePromptIds(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(promptId)) {
-            newSet.delete(promptId);
-        } else {
-            newSet.add(promptId);
+    const currentStatus = optimisticFavorites[promptId] || { isFavorite: false, count: 0 };
+    const newIsFavorite = !currentStatus.isFavorite;
+    const newCount = currentStatus.count + (newIsFavorite ? 1 : -1);
+
+    // Optimistically update the UI
+    setOptimisticFavorites(prev => ({
+        ...prev,
+        [promptId]: {
+            isFavorite: newIsFavorite,
+            count: newCount,
         }
-        return newSet;
-    });
-    await toggleFavoritePrompt(promptId);
+    }));
+    
+    try {
+        await toggleFavoritePrompt(promptId, currentStatus.isFavorite);
+    } catch (error) {
+        // Revert the optimistic update on error
+        setOptimisticFavorites(prev => ({
+            ...prev,
+            [promptId]: currentStatus
+        }));
+        toast({ title: "Error", description: "Could not update favorite status. Please try again.", variant: 'destructive' });
+    }
   };
 
   const categoryCounts = useMemo(() => {
@@ -52,14 +71,15 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
 
   const filteredPrompts = useMemo(() => {
     let prompts = initialPrompts;
-    if (activeTab === 'favorites') {
-      prompts = prompts.filter(p => favoritePromptIds.has(p.id));
-    }
     if (selectedCategory) {
       prompts = prompts.filter(p => p.categoryId === selectedCategory);
     }
-    return prompts;
-  }, [initialPrompts, selectedCategory, favoritePromptIds, activeTab]);
+    // Update prompts with optimistic counts
+    return prompts.map(p => ({
+        ...p,
+        favoritesCount: optimisticFavorites[p.id]?.count ?? p.favoritesCount,
+    }));
+  }, [initialPrompts, selectedCategory, optimisticFavorites]);
 
   const promptsWithAds = useMemo(() => {
     const items: (FullPrompt | 'ad')[] = [];
@@ -75,77 +95,43 @@ export function PromptDashboard({initialPrompts, allCategories, user}: PromptDas
 
   return (
     <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex items-center justify-between">
-            <TabsList>
-                <TabsTrigger value="all">All Prompts</TabsTrigger>
-                <TabsTrigger value="favorites" disabled={!user}>Favorites</TabsTrigger>
-            </TabsList>
-        </div>
-      
-        <div className="w-full overflow-x-auto py-4 no-scrollbar">
-          <CategoryFilters
-              categories={categoryCounts}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-          />
-        </div>
+      <div className="w-full overflow-x-auto py-4 no-scrollbar">
+        <CategoryFilters
+            categories={categoryCounts}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+        />
+      </div>
 
-        <TabsContent value="all">
-          {promptsWithAds.length > 0 ? (
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-              {promptsWithAds.map((item, index) => {
-                if(item === 'ad') {
-                  return <AdBanner adId="native-prompt-grid" key={`ad-${index}`} className="aspect-[3/4] h-auto my-0" />
-                }
-                const prompt = item as FullPrompt;
-                return (
-                  <PromptCard
-                    key={prompt.id}
-                    prompt={prompt}
-                    isFavorite={favoritePromptIds.has(prompt.id)}
-                    onToggleFavorite={handleToggleFavorite}
-                    isUserLoggedIn={!!user}
-                  />
-                )
-              })}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-              <h3 className="font-headline text-xl font-medium tracking-tight">
-                No prompts found
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Try adjusting your filters.
-              </p>
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="favorites">
-          {filteredPrompts.length > 0 ? (
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-              {filteredPrompts.map(prompt => (
-                <PromptCard
-                  key={prompt.id}
-                  prompt={prompt}
-                  isFavorite={favoritePromptIds.has(prompt.id)}
-                  onToggleFavorite={handleToggleFavorite}
-                  isUserLoggedIn={!!user}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-              <h3 className="font-headline text-xl font-medium tracking-tight">
-                No favorites yet
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Click the heart on a prompt to add it to your favorites.
-              </p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+      {promptsWithAds.length > 0 ? (
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          {promptsWithAds.map((item, index) => {
+            if(item === 'ad') {
+              return <AdBanner adId="native-prompt-grid" key={`ad-${index}`} className="aspect-[3/4] h-auto my-0" />
+            }
+            const prompt = item as FullPrompt;
+            const favoriteStatus = optimisticFavorites[prompt.id] || { isFavorite: false, count: prompt.favoritesCount };
+
+            return (
+              <PromptCard
+                key={prompt.id}
+                prompt={prompt}
+                isFavorite={favoriteStatus.isFavorite}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            )
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
+          <h3 className="font-headline text-xl font-medium tracking-tight">
+            No prompts found
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Try adjusting your filters.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

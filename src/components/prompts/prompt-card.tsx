@@ -7,32 +7,24 @@ import {Heart, Copy} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import * as Lucide from 'lucide-react';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
 import {useTransition} from 'react';
 
 type PromptCardProps = {
   prompt: FullPrompt;
   isFavorite: boolean;
   onToggleFavorite: (promptId: string) => Promise<void>;
-  isUserLoggedIn: boolean;
 };
 
 export function PromptCard({
   prompt,
   isFavorite,
   onToggleFavorite,
-  isUserLoggedIn,
 }: PromptCardProps) {
   const CategoryIcon = Lucide[prompt.category.icon] as Lucide.LucideIcon;
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleFavoriteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (!isUserLoggedIn) {
-      router.push('/login');
-      return;
-    }
     startTransition(async () => {
       await onToggleFavorite(prompt.id);
     });

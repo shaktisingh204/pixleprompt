@@ -427,40 +427,15 @@ export async function getAdCodesForClient(): Promise<Record<string, string>> {
     return codeMap;
 }
 
-export async function toggleFavoritePrompt(promptId: string) {
-  const session = await getSession();
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
-
-  await dbConnect();
-  const user = await UserModel.findOne({ id: session.id });
-  if (!user) {
-    throw new Error('User not found');
-  }
-
-  const isFavorite = user.favoritePrompts?.includes(promptId);
-  let updateCount;
-
-  if (isFavorite) {
-    user.favoritePrompts = user.favoritePrompts?.filter(id => id !== promptId);
-    updateCount = -1;
-  } else {
-    if (!user.favoritePrompts) {
-      user.favoritePrompts = [];
-    }
-    user.favoritePrompts.push(promptId);
-    updateCount = 1;
-  }
-
-  await user.save();
-  await PromptModel.updateOne({ id: promptId }, { $inc: { favoritesCount: updateCount } });
-
-  revalidatePath('/');
-  revalidatePath(`/prompt/${promptId}`);
+export async function toggleFavoritePrompt(promptId: string, isCurrentlyFavorite: boolean) {
+    await dbConnect();
   
-  // Return the new favorite status
-  return !isFavorite;
+    const updateCount = isCurrentlyFavorite ? -1 : 1;
+  
+    await PromptModel.updateOne({ id: promptId }, { $inc: { favoritesCount: updateCount } });
+  
+    revalidatePath('/');
+    revalidatePath(`/prompt/${promptId}`);
 }
 
 export async function incrementCopyCount(promptId: string) {
