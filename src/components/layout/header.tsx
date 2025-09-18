@@ -27,21 +27,17 @@ export function Header({user}: HeaderProps) {
                 <Button variant="outline" asChild>
                   <Link href="/admin">Admin Panel</Link>
                 </Button>
-                <Button asChild className="hidden md:flex">
-                  <Link href="/submit-prompt">
-                    <PlusCircle className="mr-2" />
-                    Submit Prompt
-                  </Link>
-                </Button>
               </>
             )}
+             <Button asChild className="hidden md:flex">
+                <Link href="/submit-prompt">
+                    <PlusCircle className="mr-2" />
+                    Submit Prompt
+                </Link>
+            </Button>
             <UserNav user={user} />
           </>
-        ) : (
-          <Button asChild>
-            <Link href="/login">Login</Link>
-          </Button>
-        )}
+        ) : null}
       </div>
     </header>
   );
