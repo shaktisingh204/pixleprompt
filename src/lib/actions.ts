@@ -129,13 +129,11 @@ export async function deletePrompt(promptId: string) {
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Category name must be at least 2 characters.'),
-  icon: z.string().min(1, 'Icon is required.'),
 });
 
 export type CategoryState = {
   errors?: {
     name?: string[];
-    icon?: string[];
     server?: string[];
   };
   message?: string | null;
@@ -152,13 +150,13 @@ export async function createCategory(prevState: CategoryState | undefined, formD
         };
     }
     
-    const { name, icon } = validatedFields.data;
+    const { name } = validatedFields.data;
 
     try {
         const newCategory = new CategoryModel({
             id: `cat-${uuidv4()}`,
             name,
-            icon,
+            icon: 'Tag',
         });
         await newCategory.save();
         revalidatePath('/admin');
@@ -179,10 +177,10 @@ export async function updateCategory(categoryId: string, prevState: CategoryStat
         };
     }
     
-    const { name, icon } = validatedFields.data;
+    const { name } = validatedFields.data;
 
     try {
-        await CategoryModel.findOneAndUpdate({ id: categoryId }, { name, icon });
+        await CategoryModel.findOneAndUpdate({ id: categoryId }, { name });
         revalidatePath('/admin');
         revalidatePath('/');
         return { success: true, message: 'Category updated successfully.' };

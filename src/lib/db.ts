@@ -83,7 +83,7 @@ async function seedData() {
     try {
         const uncategorizedCategory = await (models.Category || model('Category', CategorySchema)).findOne({ id: 'cat-0' });
         if (!uncategorizedCategory) {
-            await (models.Category || model('Category', CategorySchema)).create({ id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'});
+            await (models.Category || model('Category', CategorySchema)).create({ id: 'cat-0', name: 'Uncategorized', icon: 'Tag'});
         }
 
         const adCodeModel = models.AdCode || model('AdCode', AdCodeSchema);

@@ -53,7 +53,6 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Icon</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -86,7 +85,6 @@ function CategoryRow({ category }: { category: Category }) {
   return (
     <TableRow>
       <TableCell className="font-medium">{category.name}</TableCell>
-      <TableCell>{category.icon}</TableCell>
       <TableCell className="text-right space-x-2">
         <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogTrigger asChild>
@@ -141,11 +139,6 @@ function CategoryForm({ action, initialData, onSuccess, submitButtonText = "Crea
         <Label htmlFor="name">Category Name</Label>
         <Input id="name" name="name" defaultValue={initialData?.name || ''} />
         {state.errors?.name && <p className="text-sm text-destructive">{state.errors.name.join(', ')}</p>}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="icon">Lucide Icon Name</Label>
-        <Input id="icon" name="icon" defaultValue={initialData?.icon || ''} placeholder="e.g., Palette" />
-        {state.errors?.icon && <p className="text-sm text-destructive">{state.errors.icon.join(', ')}</p>}
       </div>
       <DialogFooter>
         <SubmitButton text={submitButtonText}/>
