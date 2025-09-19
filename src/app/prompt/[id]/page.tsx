@@ -29,7 +29,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
   const category = allCategories.find((c: Category) => c.id === prompt.categoryId);
   const image = placeholderImages.find(i => i.id === prompt.imageId);
 
-  const CategoryIcon = category ? (Lucide[category.icon] as Lucide.LucideIcon) : Lucide.AlertCircle;
+  const CategoryIcon = (category && Lucide[category.icon]) ? (Lucide[category.icon] as Lucide.LucideIcon) : Lucide.AlertCircle;
 
   const plainPrompt = JSON.parse(JSON.stringify(prompt));
   const plainCategory = category ? JSON.parse(JSON.stringify(category)) : {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'};
@@ -39,6 +39,8 @@ export default async function PromptPage({params}: {params: {id: string}}) {
     category: plainCategory,
     imageUrl: image?.imageUrl || 'https://placehold.co/600x400',
     imageHint: image?.imageHint || 'placeholder',
+    favoritesCount: prompt.favoritesCount || 0,
+    copiesCount: prompt.copiesCount || 0,
   };
 
   const relatedPrompts: FullPrompt[] = allPrompts
@@ -55,6 +57,8 @@ export default async function PromptPage({params}: {params: {id: string}}) {
         category: plainRelatedCategory,
         imageUrl: pImage?.imageUrl || 'https://placehold.co/600x400',
         imageHint: pImage?.imageHint || 'placeholder',
+        favoritesCount: p.favoritesCount || 0,
+        copiesCount: p.copiesCount || 0,
       };
     });
 
