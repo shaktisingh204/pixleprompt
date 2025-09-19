@@ -1,6 +1,5 @@
 
 import { getCategories, getPrompts, getAdCodes } from '@/lib/data';
-import { AdminDashboard } from '@/components/admin/admin-dashboard';
 import type { FullPrompt } from '@/lib/definitions';
 import { getPlaceholderImages } from '@/lib/placeholder-images';
 import { CategoryManager } from '@/components/admin/category-manager';
@@ -34,7 +33,6 @@ export default async function AdminPage() {
     };
   });
 
-  const pendingPrompts = fullPrompts.filter(p => p.status === 'pending');
   const allPromptsForTable = fullPrompts;
 
   return (
@@ -47,8 +45,6 @@ export default async function AdminPage() {
             </div>
           <p className="text-muted-foreground">Manage prompts, categories, and ad codes.</p>
         </div>
-
-        <AdminDashboard prompts={pendingPrompts} />
 
         <div className="mx-auto w-full max-w-6xl my-8">
             <Card>
