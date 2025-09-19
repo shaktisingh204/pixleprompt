@@ -162,6 +162,7 @@ export async function createCategory(prevState: CategoryState | undefined, formD
         });
         await newCategory.save();
         revalidatePath('/admin');
+        revalidatePath('/');
         return { success: true, message: 'Category created successfully.' };
     } catch (error) {
         return { errors: { server: ['Failed to create category.'] } };
@@ -183,6 +184,7 @@ export async function updateCategory(categoryId: string, prevState: CategoryStat
     try {
         await CategoryModel.findOneAndUpdate({ id: categoryId }, { name, icon });
         revalidatePath('/admin');
+        revalidatePath('/');
         return { success: true, message: 'Category updated successfully.' };
     } catch (error) {
         return { errors: { server: ['Failed to update category.'] } };
