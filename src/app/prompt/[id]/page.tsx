@@ -75,7 +75,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-            <div className="aspect-[4/3] relative">
+            <div className="aspect-[4/5] relative">
               <Image
                 src={fullPrompt.imageUrl}
                 alt={fullPrompt.text}
@@ -114,7 +114,7 @@ export default async function PromptPage({params}: {params: {id: string}}) {
                   <Link
                     key={relatedPrompt.id}
                     href={`/prompt/${relatedPrompt.id}`}
-                    className="group relative aspect-[4/3] overflow-hidden rounded-lg"
+                    className="group relative aspect-[4/5] overflow-hidden rounded-lg"
                   >
                     <Image
                       src={relatedPrompt.imageUrl}

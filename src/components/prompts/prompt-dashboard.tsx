@@ -61,7 +61,7 @@ export function PromptDashboard({initialPrompts, allCategories}: PromptDashboard
         <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
           {promptsWithAds.map((item, index) => {
             if(item === 'ad') {
-              return <AdBanner adId="native-prompt-grid" key={`ad-${index}`} className="aspect-[3/4] h-auto my-0" />
+              return <AdBanner adId="native-prompt-grid" key={`ad-${index}`} className="aspect-[4/5] h-auto my-0" />
             }
             const prompt = item as FullPrompt;
 

@@ -21,7 +21,7 @@ export function PromptCard({
   };
 
   return (
-    <Link href={`/prompt/${prompt.id}`} className="group relative aspect-[3/4] overflow-hidden rounded-lg">
+    <Link href={`/prompt/${prompt.id}`} className="group relative aspect-[4/5] overflow-hidden rounded-lg">
       <Image
         src={prompt.imageUrl}
         alt={prompt.text}
