@@ -1,6 +1,7 @@
 
 import {Logo} from '@/components/logo';
 import Link from 'next/link';
+import { Button } from '../ui/button';
 
 export function Header() {
   return (
@@ -12,7 +13,9 @@ export function Header() {
       </div>
 
       <div className="flex flex-1 items-center justify-end space-x-4">
-        {/* Admin and Submit buttons are removed for general users */}
+        <Button asChild variant="ghost">
+          <Link href="/admin">Admin</Link>
+        </Button>
       </div>
     </header>
   );

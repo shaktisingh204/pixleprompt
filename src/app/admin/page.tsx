@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { AdManager } from '@/components/admin/ad-manager';
 import { SubmitPromptForm } from '@/components/prompts/submit-prompt-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { LogoutButton } from '@/components/auth/logout-button';
 
 export default async function AdminPage() {
   const [prompts, categories, placeholderImages, adCodes] = await Promise.all([
@@ -40,7 +41,10 @@ export default async function AdminPage() {
     <div className="flex min-h-screen w-full flex-col">
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="mx-auto grid w-full max-w-6xl gap-2">
-          <h1 className="font-headline text-3xl font-semibold">Admin Panel</h1>
+            <div className="flex justify-between items-center">
+                <h1 className="font-headline text-3xl font-semibold">Admin Panel</h1>
+                <LogoutButton />
+            </div>
           <p className="text-muted-foreground">Manage prompts, categories, and ad codes.</p>
         </div>
 

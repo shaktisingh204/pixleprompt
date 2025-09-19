@@ -8,6 +8,7 @@ import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
 import dbConnect, {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
+import { createSession, deleteSession } from './auth';
 
 export async function getPromptSuggestions(
   selectedCategories: string[],
@@ -256,4 +257,33 @@ export async function incrementCopyCount(promptId: string) {
     await PromptModel.updateOne({ id: promptId }, { $inc: { copiesCount: 1 } });
     revalidatePath('/');
     revalidatePath(`/prompt/${promptId}`);
+}
+
+
+// --- AUTH ACTIONS ---
+
+const signInSchema = z.object({
+    username: z.string(),
+    password: z.string(),
+});
+
+export async function signIn(prevState: { error: string } | undefined, formData: FormData) {
+    const validatedFields = signInSchema.safeParse(Object.fromEntries(formData.entries()));
+    if (!validatedFields.success) {
+        return { error: 'Invalid username or password.' };
+    }
+
+    const { username, password } = validatedFields.data;
+
+    if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+        await createSession();
+        redirect('/admin');
+    }
+
+    return { error: 'Invalid username or password.' };
+}
+
+export async function signOut() {
+    await deleteSession();
+    redirect('/admin/login');
 }
