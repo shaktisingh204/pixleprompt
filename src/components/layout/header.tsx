@@ -13,9 +13,6 @@ export function Header() {
       </div>
 
       <div className="flex flex-1 items-center justify-end space-x-4">
-        <Button asChild variant="ghost">
-          <Link href="/admin">Admin</Link>
-        </Button>
       </div>
     </header>
   );
