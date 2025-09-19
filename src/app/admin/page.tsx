@@ -7,6 +7,8 @@ import { CategoryManager } from '@/components/admin/category-manager';
 import { PromptManager } from '@/components/admin/prompt-manager';
 import { Separator } from '@/components/ui/separator';
 import { AdManager } from '@/components/admin/ad-manager';
+import { SubmitPromptForm } from '@/components/prompts/submit-prompt-form';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export default async function AdminPage() {
   const [prompts, categories, placeholderImages, adCodes] = await Promise.all([
@@ -43,6 +45,20 @@ export default async function AdminPage() {
         </div>
 
         <AdminDashboard prompts={pendingPrompts} />
+
+        <div className="mx-auto w-full max-w-6xl my-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Submit a New Prompt</CardTitle>
+                    <CardDescription>
+                        Contribute to the community by sharing your own creative prompts. Your submission will be reviewed by an administrator before appearing in the library.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <SubmitPromptForm categories={categories} />
+                </CardContent>
+            </Card>
+        </div>
 
         <AdManager adCodes={adCodes} />
         

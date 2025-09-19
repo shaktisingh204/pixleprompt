@@ -1,8 +1,6 @@
 
 import {Logo} from '@/components/logo';
 import Link from 'next/link';
-import {Button} from '@/components/ui/button';
-import {PlusCircle} from 'lucide-react';
 
 export function Header() {
   return (
@@ -14,17 +12,7 @@ export function Header() {
       </div>
 
       <div className="flex flex-1 items-center justify-end space-x-4">
-        <Button asChild>
-          <Link href="/submit-prompt">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Submit Prompt
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/admin">
-            Admin
-          </Link>
-        </Button>
+        {/* Admin and Submit buttons are removed for general users */}
       </div>
     </header>
   );
