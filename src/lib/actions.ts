@@ -180,7 +180,7 @@ export async function updateCategory(categoryId: string, prevState: CategoryStat
     const { name } = validatedFields.data;
 
     try {
-        await CategoryModel.findOneAndUpdate({ id: categoryId }, { name });
+        await CategoryModel.findOneAndUpdate({ id: categoryId }, { name, icon: 'Tag' });
         revalidatePath('/admin');
         revalidatePath('/');
         return { success: true, message: 'Category updated successfully.' };
@@ -240,16 +240,6 @@ export async function getAdCodesForClient(): Promise<Record<string, string>> {
       codeMap[ad.id] = ad.code;
     }
     return codeMap;
-}
-
-export async function toggleFavoritePrompt(promptId: string, decrement: boolean) {
-    await dbConnect();
-    const updateCount = decrement ? -1 : 1;
-  
-    await PromptModel.updateOne({ id: promptId }, { $inc: { favoritesCount: updateCount } });
-  
-    revalidatePath('/');
-    revalidatePath(`/prompt/${promptId}`);
 }
 
 export async function incrementCopyCount(promptId: string) {
