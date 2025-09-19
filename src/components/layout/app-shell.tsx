@@ -1,8 +1,6 @@
 
 'use client';
 
-import type {User} from '@/lib/definitions';
-import {getSession} from '@/lib/actions';
 import Link from 'next/link';
 import {
   FileText,
@@ -12,7 +10,7 @@ import {
   MoreHorizontal,
   PanelLeft,
 } from 'lucide-react';
-import {usePathname, useRouter} from 'next/navigation';
+import {usePathname} from 'next/navigation';
 import {useEffect, useState} from 'react';
 import {cn} from '@/lib/utils';
 import {Header} from '@/components/layout/header';
@@ -27,10 +25,8 @@ import { Button } from '@/components/ui/button';
 
 function MainContent({
   children,
-  user,
 }: {
   children: React.ReactNode;
-  user: User | null;
 }) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
@@ -59,7 +55,7 @@ function MainContent({
 
   return (
     <div className="flex flex-col w-full min-h-screen">
-      <Header user={user} />
+      <Header />
       <main className="flex-1 overflow-y-auto pb-16 md:pb-0">{children}</main>
       <Footer />
       {isMobile && (
@@ -123,31 +119,5 @@ function MainContent({
 }
 
 export function AppShell({children}: {children: React.ReactNode}) {
-  const [user, setUser] = useState<User | null>(null);
-  const pathname = usePathname();
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      const session = await getSession();
-      setUser(session);
-
-      // Perform client-side redirects based on role and path
-      if (!session) {
-        if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-            router.push('/admin/login');
-        }
-      } else {
-        if (session.role !== 'admin' && pathname.startsWith('/admin')) {
-          router.push('/');
-        }
-        if (session.role === 'admin' && pathname === '/admin/login') {
-          router.push('/admin');
-        }
-      }
-    };
-    fetchSession();
-  }, [pathname, router]);
-
-  return <MainContent user={user}>{children}</MainContent>;
+  return <MainContent>{children}</MainContent>;
 }

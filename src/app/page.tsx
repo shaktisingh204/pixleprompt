@@ -1,5 +1,4 @@
 
-import {getSession} from '@/lib/actions';
 import {getPrompts, getCategories} from '@/lib/data';
 import {getPlaceholderImages} from '@/lib/placeholder-images';
 import type {FullPrompt} from '@/lib/definitions';
@@ -7,7 +6,6 @@ import {PromptDashboard} from '@/components/prompts/prompt-dashboard';
 import { AdBanner } from '@/components/ad-banner';
 
 export default async function Home() {
-  const user = await getSession();
 
   const [prompts, categories, placeholderImages] = await Promise.all([
     getPrompts(),

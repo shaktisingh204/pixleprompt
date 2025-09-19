@@ -1,9 +1,8 @@
 
 import {notFound} from 'next/navigation';
-import {getPrompts, getCategories, getUsers} from '@/lib/data';
+import {getPrompts, getCategories} from '@/lib/data';
 import {getPlaceholderImages} from '@/lib/placeholder-images';
-import type {FullPrompt, Prompt, Category, User} from '@/lib/definitions';
-import {getSession} from '@/lib/actions';
+import type {FullPrompt, Prompt, Category} from '@/lib/definitions';
 import Image from 'next/image';
 import {Badge} from '@/components/ui/badge';
 import * as Lucide from 'lucide-react';
@@ -15,12 +14,10 @@ import {Separator} from '@/components/ui/separator';
 import { AdBanner } from '@/components/ad-banner';
 
 export default async function PromptPage({params}: {params: {id: string}}) {
-  const session = await getSession();
   
-  const [allPrompts, allCategories, allUsers, placeholderImages] = await Promise.all([
+  const [allPrompts, allCategories, placeholderImages] = await Promise.all([
     getPrompts(),
     getCategories(),
-    getUsers(),
     getPlaceholderImages()
   ]);
 
@@ -31,19 +28,17 @@ export default async function PromptPage({params}: {params: {id: string}}) {
 
   const category = allCategories.find((c: Category) => c.id === prompt.categoryId);
   const image = placeholderImages.find(i => i.id === prompt.imageId);
-  const submitter = prompt.submittedBy ? allUsers.find((u: User) => u.id === prompt.submittedBy) : null;
 
   const CategoryIcon = category ? (Lucide[category.icon] as Lucide.LucideIcon) : Lucide.AlertCircle;
 
   const plainPrompt = JSON.parse(JSON.stringify(prompt));
   const plainCategory = category ? JSON.parse(JSON.stringify(category)) : {id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle'};
 
-  const fullPrompt: FullPrompt & {submittedBy?: {name: string}} = {
+  const fullPrompt: FullPrompt = {
     ...plainPrompt,
     category: plainCategory,
     imageUrl: image?.imageUrl || 'https://placehold.co/600x400',
     imageHint: image?.imageHint || 'placeholder',
-    submittedBy: submitter ? {name: submitter.name} : undefined,
   };
 
   const relatedPrompts: FullPrompt[] = allPrompts
@@ -98,11 +93,6 @@ export default async function PromptPage({params}: {params: {id: string}}) {
                 <h1 className="font-headline text-4xl font-bold tracking-tight">
                   Prompt Details
                 </h1>
-                {fullPrompt.submittedBy && (
-                  <p className="text-lg text-muted-foreground">
-                    Submitted by {fullPrompt.submittedBy.name}
-                  </p>
-                )}
               </div>
 
               <PromptReveal promptText={fullPrompt.text} promptId={fullPrompt.id} />

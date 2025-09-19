@@ -4,83 +4,10 @@
 import {z} from 'zod';
 import {redirect} from 'next/navigation';
 import {revalidatePath} from 'next/cache';
-import {getSessionCookie} from '@/lib/auth';
-import {signIn, signOut, signUp} from '@/lib/auth-actions';
 import {suggestNewPrompts} from '@/ai/flows/suggest-new-prompts';
 import type {SuggestNewPromptsOutput} from '@/ai/flows/suggest-new-prompts';
-import dbConnect, {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel, UserModel} from '@/lib/db';
+import dbConnect, {Prompt, PromptModel, CategoryModel, PlaceholderImageModel, AdCode, AdCodeModel} from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import type { User } from './definitions';
-
-
-export async function getSession(): Promise<User | null> {
-    const sessionCookie = await getSessionCookie();
-    if (!sessionCookie) return null;
-  
-    try {
-      await dbConnect();
-      const user = await UserModel.findOne({ email: sessionCookie }).lean().exec();
-      if (!user) {
-          // This case can happen if the user was deleted but the cookie remains.
-          await signOut(); // Clear the invalid cookie
-          return null;
-      }
-      // Convert document to plain object and remove password
-      const { password, ...userWithoutPassword } = user;
-      return JSON.parse(JSON.stringify(userWithoutPassword));
-    } catch (error) {
-      console.error('Failed to fetch session:', error);
-      return null;
-    }
-}
-
-
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-
-export type LoginState = {
-  errors?: {
-    email?: string[];
-    password?: string[];
-    server?: string[];
-  };
-  message?: string | null;
-};
-
-export async function authenticate(
-  prevState: LoginState | undefined,
-  formData: FormData
-): Promise<LoginState | undefined> {
-  try {
-    const validatedFields = loginSchema.safeParse(Object.fromEntries(formData.entries()));
-
-    if (!validatedFields.success) {
-      return {
-        errors: validatedFields.error.flatten().fieldErrors,
-        message: 'Invalid fields.',
-      };
-    }
-
-    await signIn(validatedFields.data.email, validatedFields.data.password);
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('CredentialsSignin')) {
-      return {errors: {server: ['Invalid credentials']}};
-    }
-    return {errors: {server: ['Something went wrong.']}};
-  }
-  revalidatePath('/admin');
-  redirect('/admin');
-}
-
-
-export async function logout() {
-  await signOut();
-  revalidatePath('/admin/login');
-  redirect('/admin/login');
-}
 
 export async function getPromptSuggestions(
   selectedCategories: string[],
@@ -120,11 +47,6 @@ export async function submitPrompt(
   formData: FormData
 ): Promise<SubmitPromptState> {
   try {
-    const session = await getSession();
-    if (!session || session.role !== 'admin') {
-      throw new Error('You must be an admin to submit a prompt.');
-    }
-
     const validatedFields = submitPromptSchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
@@ -150,7 +72,6 @@ export async function submitPrompt(
       description: `User submission: ${text.substring(0, 30)}`,
       imageUrl: imageDataUri,
       imageHint: "user submission",
-      uploadedBy: session.id,
     });
     await newImage.save();
     
@@ -159,8 +80,7 @@ export async function submitPrompt(
       text,
       categoryId,
       imageId: imageId,
-      status: 'approved',
-      submittedBy: session.id,
+      status: 'approved', // Auto-approved
     };
     
     const newPrompt = new PromptModel(newPromptData);
@@ -201,24 +121,14 @@ export async function submitPrompt(
 }
 
 export async function approvePrompt(promptId: string) {
-  const session = await getSession();
-  if (session?.role !== 'admin') {
-    throw new Error('Unauthorized');
-  }
-
   await dbConnect();
-  const prompt = await PromptModel.findOneAndUpdate({ id: promptId }, { status: 'approved' }, { new: true });
+  await PromptModel.findOneAndUpdate({ id: promptId }, { status: 'approved' }, { new: true });
   
   revalidatePath('/admin');
   revalidatePath('/');
 }
 
 export async function rejectPrompt(promptId: string) {
-  const session = await getSession();
-  if (session?.role !== 'admin') {
-    throw new Error('Unauthorized');
-  }
-  
   await dbConnect();
   await PromptModel.deleteOne({ id: promptId });
 
@@ -227,19 +137,11 @@ export async function rejectPrompt(promptId: string) {
 }
 
 export async function deletePrompt(promptId: string) {
-  const session = await getSession();
-  if (session?.role !== 'admin') {
-    throw new Error('Unauthorized');
-  }
-  
   await dbConnect();
   const prompt = await PromptModel.findOne({ id: promptId });
   if (prompt) {
     // Also delete the associated user-uploaded image
-    const image = await PlaceholderImageModel.findOne({ id: prompt.imageId });
-    if (image && image.uploadedBy) {
-        await PlaceholderImageModel.deleteOne({ id: prompt.imageId });
-    }
+    await PlaceholderImageModel.deleteOne({ id: prompt.imageId });
     await PromptModel.deleteOne({ id: promptId });
   }
 
@@ -263,10 +165,6 @@ export type CategoryState = {
 }
 
 export async function createCategory(prevState: CategoryState | undefined, formData: FormData): Promise<CategoryState> {
-    const session = await getSession();
-    if (session?.role !== 'admin') {
-        throw new Error('Unauthorized');
-    }
     await dbConnect();
     const validatedFields = categorySchema.safeParse(Object.fromEntries(formData.entries()));
 
@@ -293,10 +191,6 @@ export async function createCategory(prevState: CategoryState | undefined, formD
 }
 
 export async function updateCategory(categoryId: string, prevState: CategoryState | undefined, formData: FormData): Promise<CategoryState> {
-    const session = await getSession();
-    if (session?.role !== 'admin') {
-        throw new Error('Unauthorized');
-    }
     await dbConnect();
     const validatedFields = categorySchema.safeParse(Object.fromEntries(formData.entries()));
 
@@ -318,11 +212,6 @@ export async function updateCategory(categoryId: string, prevState: CategoryStat
 }
 
 export async function deleteCategory(categoryId: string) {
-    const session = await getSession();
-    if (session?.role !== 'admin') {
-        throw new Error('Unauthorized');
-    }
-
     try {
         await dbConnect();
         await CategoryModel.deleteOne({ id: categoryId });
@@ -348,10 +237,6 @@ export type AdCodeState = {
 }
 
 export async function updateAdCode(adId: string, prevState: AdCodeState | undefined, formData: FormData): Promise<AdCodeState> {
-    const session = await getSession();
-    if (session?.role !== 'admin') {
-        throw new Error('Unauthorized');
-    }
     await dbConnect();
     const validatedFields = adCodeSchema.safeParse(Object.fromEntries(formData.entries()));
     if (!validatedFields.success) {

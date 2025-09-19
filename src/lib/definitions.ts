@@ -2,14 +2,6 @@
 import type {LucideIcon} from 'lucide-react';
 import type { Document } from 'mongoose';
 
-export interface User extends Document {
-  id: string;
-  name: string;
-  email: string;
-  password?: string; // Should not be sent to client
-  role: 'admin' | 'user';
-};
-
 export interface Category extends Document {
   id:string;
   name: string;
@@ -22,7 +14,6 @@ export interface Prompt extends Document {
   categoryId: string;
   imageId: string;
   status: 'pending' | 'approved';
-  submittedBy?: string;
   favoritesCount: number;
   copiesCount: number;
 };

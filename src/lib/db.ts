@@ -1,6 +1,6 @@
 
 import mongoose, { Schema, model, models } from 'mongoose';
-import type { User, Category, Prompt, AdCode } from '@/lib/definitions';
+import type { Category, Prompt, AdCode } from '@/lib/definitions';
 import { ImagePlaceholder } from './placeholder-images';
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -41,14 +41,6 @@ async function dbConnect() {
   return cached.conn;
 }
 
-const UserSchema = new Schema<User>({
-  id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'user'], required: true, default: 'user' },
-});
-
 const CategorySchema = new Schema<Category>({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
@@ -61,7 +53,6 @@ const PromptSchema = new Schema<Prompt>({
   categoryId: { type: String, required: true, ref: 'Category' },
   imageId: { type: String, required: true },
   status: { type: String, enum: ['pending', 'approved'], required: true, default: 'pending' },
-  submittedBy: { type: String, ref: 'User' },
   favoritesCount: { type: Number, default: 0 },
   copiesCount: { type: Number, default: 0 },
 }, { timestamps: true });
@@ -71,7 +62,6 @@ const PlaceholderImageSchema = new Schema<ImagePlaceholder>({
     description: { type: String, required: true },
     imageUrl: { type: String, required: true },
     imageHint: { type: String, required: true },
-    uploadedBy: { type: String, ref: 'User', required: false },
 });
 
 const AdCodeSchema = new Schema<AdCode>({
@@ -81,13 +71,12 @@ const AdCodeSchema = new Schema<AdCode>({
     type: { type: String, enum: ['banner', 'interstitial', 'rewarded', 'native'], required: true },
 });
 
-export const UserModel = models.User || model<User>('User', UserSchema);
 export const CategoryModel = models.Category || model<Category>('Category', CategorySchema);
 export const PromptModel = models.Prompt || model<Prompt>('Prompt', PromptSchema);
 export const PlaceholderImageModel = models.PlaceholderImage || model<ImagePlaceholder>('PlaceholderImage', PlaceholderImageSchema);
 export const AdCodeModel = models.AdCode || model<AdCode>('AdCode', AdCodeSchema);
 
-export type { User, Category, Prompt, ImagePlaceholder, AdCode };
+export type { Category, Prompt, ImagePlaceholder, AdCode };
 
 
 async function seedData() {

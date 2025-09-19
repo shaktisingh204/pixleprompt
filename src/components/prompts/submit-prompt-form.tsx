@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useFormState, useFormStatus} from 'react-dom';
@@ -45,7 +46,7 @@ export function SubmitPromptForm({categories}: SubmitPromptFormProps) {
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Your Prompt</CardTitle>
           <CardDescription>
-            Write a clear and concise prompt that will inspire creative outputs. As an admin, submitted prompts are automatically approved.
+            Write a clear and concise prompt that will inspire creative outputs. Your prompt will be automatically approved and added to the library.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

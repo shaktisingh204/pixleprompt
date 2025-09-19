@@ -1,3 +1,4 @@
+
 'use client';
 
 import type {FullPrompt} from '@/lib/definitions';
@@ -35,7 +36,7 @@ export function AdminDashboard({prompts}: AdminDashboardProps) {
         <CardHeader>
           <CardTitle>Pending Submissions</CardTitle>
           <CardDescription>
-            {prompts.length} prompt{prompts.length === 1 ? '' : 's'} waiting for review.
+            {prompts.length} prompt{prompts.length === 1 ? '' : 's'} waiting for review. All prompts are auto-approved, so this list should be empty.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -66,7 +67,7 @@ export function AdminDashboard({prompts}: AdminDashboardProps) {
                     <TableCell>
                       <Badge variant="secondary">{prompt.category.name}</Badge>
                     </TableCell>
-                    <TableCell>{prompt.submittedBy || 'Anonymous'}</TableCell>
+                    <TableCell>{'Public'}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button
                         size="icon"

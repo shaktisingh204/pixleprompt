@@ -1,4 +1,5 @@
-import { getCategories, getPrompts, getUsers, getAdCodes } from '@/lib/data';
+
+import { getCategories, getPrompts, getAdCodes } from '@/lib/data';
 import { AdminDashboard } from '@/components/admin/admin-dashboard';
 import type { FullPrompt } from '@/lib/definitions';
 import { getPlaceholderImages } from '@/lib/placeholder-images';
@@ -8,28 +9,25 @@ import { Separator } from '@/components/ui/separator';
 import { AdManager } from '@/components/admin/ad-manager';
 
 export default async function AdminPage() {
-  const [prompts, categories, users, placeholderImages, adCodes] = await Promise.all([
+  const [prompts, categories, placeholderImages, adCodes] = await Promise.all([
     getPrompts(),
     getCategories(),
-    getUsers(),
     getPlaceholderImages(),
     getAdCodes(),
   ]);
 
   const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
-  const userMap = new Map(users.map(u => [u.id, u]));
   const imageMap = new Map(placeholderImages.map(img => [img.id, img]));
 
   const fullPrompts: (FullPrompt & { submittedBy?: string })[] = prompts.map(prompt => {
     const category = categoryMap.get(prompt.categoryId);
-    const submitter = prompt.submittedBy ? userMap.get(prompt.submittedBy) : undefined;
     const image = imageMap.get(prompt.imageId);
     return {
       ...prompt,
       category: category || { id: 'cat-0', name: 'Uncategorized', icon: 'AlertCircle' },
       imageUrl: image?.imageUrl || 'https://placehold.co/600x400',
       imageHint: image?.imageHint || 'user submission',
-      submittedBy: submitter?.name || 'Unknown',
+      submittedBy: 'Public',
     };
   });
 
